@@ -10,8 +10,8 @@
 
 ## Implementation Tasks
 
-- [ ] Create Flyway migration `V4__add_character_crud_and_roll_tables.sql` (`class_progressions`, `ability_rolls` with partial unique index for unused roll per user, `hp_rolls`, and `notes`/`hp_calculation_method`/`has_pending_level_choices`/`user_id NOT NULL` on `characters`)
-- [ ] Remove duplicate dormant stubs (`CreatePlayerCharacterUseCase`, `CharacterRepositoryPort`, `CreatePlayerCharacterService`, `PlayerCharacterUseCaseConfig`)
+- [x] Create Flyway migration `V4__add_character_crud_and_roll_tables.sql` (`class_progressions`, `ability_rolls` with partial unique index for unused roll per user, `hp_rolls`, and `notes`/`hp_calculation_method`/`has_pending_level_choices`/`user_id NOT NULL` on `characters`)
+- [x] Remove duplicate dormant stubs (`CreatePlayerCharacterUseCase`, `CharacterRepositoryPort`, `CreatePlayerCharacterService`, `PlayerCharacterUseCaseConfig`)
 - [ ] Implement `AbilityScoreValidator`, `RulesEngine` (`Srd2014RulesEngine`, `Srd2024RulesEngine`), `ClassProgression`, and HP calculation (`MAX`, `AVERAGE`, `ROLLED`) in `domain/model/`
 - [ ] Update `PlayerCharacter` domain model with `notes`, `hpCalculationMethod`, `hasPendingLevelChoices`, `ClassProgression`, and `updateSheet(name, hpCurrent, hpTemp, notes)`
 - [ ] Implement `RollAbilityScoresUseCase` and `RollHitPointsUseCase` (single-chance idempotent roll generation and consumption)

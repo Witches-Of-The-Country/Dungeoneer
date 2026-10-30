@@ -84,13 +84,20 @@
 
 ---
 
-### Próxima Etapa: Fase 5 (Adaptador Web REST & Endpoints da API)
-- Implementação de `ReferenceDataController` em `adapter/in/web/`:
-  - `GET /api/reference/classes`
-  - `GET /api/reference/lineages`
-  - `GET /api/reference/backgrounds`
-  - Suporte ao query parameter opcional `?ruleset=SRD_2014|SRD_2024`.
-  - Validação estrita de `ruleset` com mapeamento para `422 Unprocessable Entity` RFC 7807 `ProblemDetail`.
-- Testes MockMvc (`ReferenceDataControllerTest`) cobrindo TP-03 e TE-01.
+### Fase 5: Adaptador Web REST & Endpoints da API (✅ Concluída)
+- **O que foi feito:**
+  - Implementado o controlador REST [`ReferenceDataController.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/ReferenceDataController.java) mapeado em `/api/reference`:
+    - `GET /api/reference/classes`: retorna lista de `ArchetypeDto`, aceitando parâmetro opcional `?ruleset=`.
+    - `GET /api/reference/lineages`: retorna lista de `LineageDto`, aceitando parâmetro opcional `?ruleset=`.
+    - `GET /api/reference/backgrounds`: retorna lista de `BackgroundDto`, aceitando parâmetro opcional `?ruleset=`.
+    - Validação de entrada: se `ruleset` for fornecido e inválido, lança `CharacterValidationException`.
+  - Atualizado o tratador global de erros [`GlobalExceptionHandler.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/core/web/GlobalExceptionHandler.java) para capturar `CharacterValidationException` e `IllegalArgumentException`, retornando HTTP 422 Unprocessable Entity RFC 7807 `ProblemDetail`.
+  - Atualizado [`GlobalExceptionHandlerTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/core/web/GlobalExceptionHandlerTest.java) cobrindo as novas exceções.
+  - Criada a suíte de testes MockMvc [`ReferenceDataControllerTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/ReferenceDataControllerTest.java) com 7 testes:
+    - TP-03: `GET /api/reference/{classes,lineages,backgrounds}` sem filtro e com filtros válidos `SRD_2014` e `SRD_2024` retornando `200 OK`.
+    - TE-01: `GET /api/reference/{classes,lineages,backgrounds}?ruleset=INVALID` retornando `422 Unprocessable Entity` RFC 7807 `ProblemDetail`.
+  - Atualizada a especificação delta [`specs/player-character-data-model-delta.md`](file:///D:/Projects/Dungeoneer/openspec/changes/reference-data-backend/specs/player-character-data-model-delta.md) com documentação de colunas e regras.
+- **Validação:**
+  - `mvn -f player-character-service/backend/pom.xml clean verify` executado com sucesso: **78 testes passando, 0 falhas, 0 erros, build JAR concluído**.
 
 

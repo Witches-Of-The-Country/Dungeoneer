@@ -1,10 +1,10 @@
 # Proposal: Reference Data Backend
 
 > **Change ID:** `reference-data-backend`
-> **Status:** draft
+> **Status:** implemented
 > **Author:** @jaca
 > **Created:** 2026-10-29
-> **Last Updated:** 2026-10-29
+> **Last Updated:** 2026-10-30
 
 ---
 
@@ -70,10 +70,10 @@ Moves `characters` and `ability_scores` to schema `player_character` and creates
 
 ## Acceptance Criteria
 
-- [ ] **Given** a fresh PostgreSQL database **When** Flyway migrations `V1`–`V3` execute **Then** schema `player_character` contains `characters`, `ability_scores`, `archetypes` (26 rows: 13 per ruleset), `lineages` (18 rows: 9 per ruleset), and `backgrounds` (12 rows: 6 per ruleset).
-- [ ] **Given** `GET /api/reference/classes?ruleset=SRD_2024` **When** requested **Then** `200 OK` returns all 13 `SRD_2024` classes with hit dice, primary ability, proficiencies, and spellcasting metadata.
-- [ ] **Given** `GET /api/reference/lineages?ruleset=SRD_2014` **When** requested **Then** `200 OK` returns all 9 `SRD_2014` lineages including their fixed `abilityBonuses`.
-- [ ] **Given** `GET /api/reference/backgrounds?ruleset=SRD_2024` **When** requested **Then** `200 OK` returns all 6 `SRD_2024` backgrounds including `allowedAbilityBonuses` (3 abilities) and informational `originFeatName` / `originFeatDescription`.
+- [x] **Given** a fresh PostgreSQL database **When** Flyway migrations `V1`–`V3` execute **Then** schema `player_character` contains `characters`, `ability_scores`, `archetypes` (26 rows: 13 per ruleset), `lineages` (18 rows: 9 per ruleset), and `backgrounds` (12 rows: 6 per ruleset).
+- [x] **Given** `GET /api/reference/classes?ruleset=SRD_2024` **When** requested **Then** `200 OK` returns all 13 `SRD_2024` classes with hit dice, primary ability, proficiencies, and spellcasting metadata.
+- [x] **Given** `GET /api/reference/lineages?ruleset=SRD_2014` **When** requested **Then** `200 OK` returns all 9 `SRD_2014` lineages including their fixed `abilityBonuses`.
+- [x] **Given** `GET /api/reference/backgrounds?ruleset=SRD_2024` **When** requested **Then** `200 OK` returns all 6 `SRD_2024` backgrounds including `allowedAbilityBonuses` (3 abilities) and informational `originFeatName` / `originFeatDescription`.
 
 ## Defensive Security & Validation Considerations
 

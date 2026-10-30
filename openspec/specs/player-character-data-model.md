@@ -1,7 +1,7 @@
 ---
 id: "player-character-data-model"
 title: "Player Character Data Model & Persistence — Living Specification"
-version: "1.0.0"
+version: "1.1.0"
 status: "active"
 owners:
   - "@jaca"
@@ -261,7 +261,7 @@ erDiagram
 | `ability_score_method` | `VARCHAR(20)` | NOT NULL | STANDARD_ARRAY, POINT_BUY, ROLLED |
 | `lineage_id` | `UUID` | FK → lineages.id, NOT NULL | |
 | `background_id` | `UUID` | FK → backgrounds.id, NOT NULL | |
-| `user_id` | `UUID` | FK → users.id, NULLABLE | Placeholder for future auth |
+| `user_id` | `UUID` | NULLABLE | Logical reference to auth-service users.id (no cross-schema FK) |
 | `created_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT NOW() | |
 | `updated_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT NOW() | |
 
@@ -336,7 +336,7 @@ erDiagram
 | Column | Type | Constraints |
 |--------|------|-------------|
 | `id` | `UUID` | PK |
-| `name` | `VARCHAR(50)` | NOT NULL, UNIQUE |
+| `name` | `VARCHAR(50)` | NOT NULL |
 | `hit_dice` | `VARCHAR(3)` | NOT NULL (D6, D8, D10, D12) |
 | `primary_ability` | `VARCHAR(15)` | NOT NULL |
 | `saving_throw_proficiencies` | `VARCHAR[]` | NOT NULL |
@@ -347,6 +347,7 @@ erDiagram
 | `ruleset` | `VARCHAR(10)` | NOT NULL |
 | `source` | `VARCHAR(10)` | NOT NULL, DEFAULT 'SRD' |
 | `owner_id` | `UUID` | NULLABLE (for homebrew) |
+| UNIQUE | | (`name`, `ruleset`, `source`) |
 
 #### `subclasses`
 
@@ -412,9 +413,12 @@ erDiagram
 | `description` | `TEXT` | |
 | `speed` | `INT` | NOT NULL, DEFAULT 30 |
 | `size` | `VARCHAR(10)` | NOT NULL |
+| `ability_bonuses` | `JSONB` | NOT NULL, DEFAULT '{}' (SRD_2014 fixed ASI; empty in SRD_2024) |
+| `traits_summary` | `TEXT[]` | NULLABLE (racial/lineage traits) |
 | `ruleset` | `VARCHAR(10)` | NOT NULL |
 | `source` | `VARCHAR(10)` | NOT NULL, DEFAULT 'SRD' |
 | `owner_id` | `UUID` | NULLABLE |
+| UNIQUE | | (`name`, `ruleset`, `source`) |
 
 #### `lineage_feats`
 
@@ -434,9 +438,13 @@ erDiagram
 | `skill_proficiencies` | `VARCHAR[]` | NOT NULL |
 | `tool_proficiencies` | `VARCHAR[]` | |
 | `languages` | `VARCHAR[]` | |
+| `allowed_ability_bonuses` | `VARCHAR[]` | NOT NULL, DEFAULT '{}' (SRD_2024 3 allowed ASI abilities) |
+| `origin_feat_name` | `VARCHAR(100)` | NULLABLE (SRD_2024 Origin Feat name) |
+| `origin_feat_description` | `TEXT` | NULLABLE (SRD_2024 Origin Feat description) |
 | `ruleset` | `VARCHAR(10)` | NOT NULL |
 | `source` | `VARCHAR(10)` | NOT NULL, DEFAULT 'SRD' |
 | `owner_id` | `UUID` | NULLABLE |
+| UNIQUE | | (`name`, `ruleset`, `source`) |
 
 #### `items`
 
@@ -465,4 +473,5 @@ erDiagram
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.1.0 | 2026-10-30 | @jaca | Aligned schema to player_character, added V2/V3 reference tables with dual ruleset unique constraints, ASI JSONB/arrays, and origin feat metadata (reference-data-backend) |
 | 1.0.0 | 2026-10-29 | @jaca | Migrated from `docs/spec/res/data-models.md` and `docs/spec/res/er-diagram.md` |
