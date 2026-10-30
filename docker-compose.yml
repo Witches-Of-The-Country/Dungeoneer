@@ -40,8 +40,12 @@ services:
       context: ./api-gateway/backend
       dockerfile: ../Dockerfile
     environment:
+      AUTH_SERVICE_URL: http://auth-service:8080
+      CHARACTER_SERVICE_URL: http://player-character-service:8080
       PLAYER_CHARACTER_SERVICE_URL: http://player-character-service:8080
-      # CAMPAIGN_SERVICE_URL: http://campaign-service:8081
+      JWT_SECRET: ${JWT_SECRET:-dungeoneer_default_development_secret_key_minimum_256_bits_length!}
+      PORT: 8080
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
       SPRING_PROFILES_ACTIVE: dev
     ports:
       - "9090:8080"
@@ -49,19 +53,19 @@ services:
       - dungeoneer-net
     depends_on:
       - player-character-service
+      - auth-service
 
   dungeoneer-frontend:
     build:
       context: ./dungeoneer-frontend
     environment:
-      # Until api-gateway is implemented, point directly to player-character-service
-      NEXT_PUBLIC_API_URL: http://localhost:8080
+      NEXT_PUBLIC_API_URL: http://localhost:9090
     ports:
       - "3000:3000"
     networks:
       - dungeoneer-net
     depends_on:
-      - player-character-service
+      - api-gateway
 
   auth-service:
     build:

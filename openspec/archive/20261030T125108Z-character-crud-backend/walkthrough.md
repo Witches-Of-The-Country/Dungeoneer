@@ -59,14 +59,14 @@ Este documento consolida o progresso cumulativo das fases de implementação da 
   - [`PlayerCharacterRepositoryPort.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/port/out/PlayerCharacterRepositoryPort.java)
   - [`AbilityRollRepositoryPort.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/port/out/AbilityRollRepositoryPort.java)
   - [`HpRollRepositoryPort.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/port/out/HpRollRepositoryPort.java)
-  - [`ReferenceDataRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/port/out/ReferenceDataRepository.java) (adicionados métodos `findArchetypeById`, `findLineageById`, `findBackgroundById`)
+  - [`ReferenceDataRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/port/out/ReferenceDataRepository.java)
 - **Application Services & Hydrator**:
-  - [`CreateCharacterService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CreateCharacterService.java): orquestra validação de pontuação, ASI, HP server-side, consumo atômico de rolls e persistência.
-  - [`CharacterQueryService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CharacterQueryService.java): consultas restritas a `userId`.
-  - [`UpdateCharacterService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/UpdateCharacterService.java): atualização dos campos mutáveis (`name`, `hitPointsCurrent`, `hitPointsTemp`, `notes`).
-  - [`DeleteCharacterService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/DeleteCharacterService.java): exclusão física com proteção IDOR.
-  - [`RollService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/RollService.java): geração e retorno idempotente de rolagens 4d6kh3 e HP.
-  - [`CharacterSheetHydrator.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CharacterSheetHydrator.java): hidratação completa da ficha (salvaguardas, 18 perícias e dados de referência).
+  - [`CreateCharacterService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CreateCharacterService.java)
+  - [`CharacterQueryService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CharacterQueryService.java)
+  - [`UpdateCharacterService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/UpdateCharacterService.java)
+  - [`DeleteCharacterService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/DeleteCharacterService.java)
+  - [`RollService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/RollService.java)
+  - [`CharacterSheetHydrator.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CharacterSheetHydrator.java)
 - **Testes Unitários da Aplicação (Mockito)**:
   - [`CreateCharacterServiceTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/application/service/CreateCharacterServiceTest.java) (TP-01, TE-01)
   - [`RollServiceTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/application/service/RollServiceTest.java) (TP-02)
@@ -82,14 +82,14 @@ Este documento consolida o progresso cumulativo das fases de implementação da 
 
 ### 1. Modificações Realizadas
 - **Entidades JPA & Mapeamento**:
-  - [`PlayerCharacterJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/PlayerCharacterJpaEntity.java): atualizado com `notes`, `hp_calculation_method`, `has_pending_level_choices`, `user_id NOT NULL` e associação em cascata para `ClassProgressionJpaEntity`.
+  - [`PlayerCharacterJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/PlayerCharacterJpaEntity.java)
   - [`ClassProgressionJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/ClassProgressionJpaEntity.java)
   - [`AbilityRollJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/AbilityRollJpaEntity.java) com `@JdbcTypeCode(SqlTypes.ARRAY)` e `@JdbcTypeCode(SqlTypes.JSON)`.
   - [`HpRollJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/HpRollJpaEntity.java) com `@JdbcTypeCode(SqlTypes.ARRAY)`.
 - **Spring Data Repositories & Adaptadores**:
-  - [`SpringDataPlayerCharacterRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/SpringDataPlayerCharacterRepository.java): queries escopadas por `userId`.
-  - [`SpringDataAbilityRollRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/SpringDataAbilityRollRepository.java): `findFirstByUserIdAndUsedFalse`.
-  - [`SpringDataHpRollRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/SpringDataHpRollRepository.java): `findFirstByUserIdAndArchetypeIdAndTargetLevelAndUsedFalse`.
+  - [`SpringDataPlayerCharacterRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/SpringDataPlayerCharacterRepository.java)
+  - [`SpringDataAbilityRollRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/SpringDataAbilityRollRepository.java)
+  - [`SpringDataHpRollRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/SpringDataHpRollRepository.java)
   - [`SpringDataClassProgressionRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/SpringDataClassProgressionRepository.java)
   - [`PlayerCharacterPersistenceAdapter.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/PlayerCharacterPersistenceAdapter.java)
   - [`AbilityRollPersistenceAdapter.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/AbilityRollPersistenceAdapter.java)
@@ -99,7 +99,7 @@ Este documento consolida o progresso cumulativo das fases de implementação da 
   - [`RollPersistenceAdapterTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/out/persistence/RollPersistenceAdapterTest.java) (TP-02)
 
 ### 2. Resultados de Verificação
-- `mvn -f player-character-service/backend/pom.xml test -Dtest="*Persistence*Test"` -> `BUILD SUCCESS` (6 testes contra PostgreSQL Testcontainer real com migrações V1–V4).
+- `mvn -f player-character-service/backend/pom.xml test -Dtest="*Persistence*Test"` -> `BUILD SUCCESS` (6 testes).
 
 ---
 
@@ -107,37 +107,45 @@ Este documento consolida o progresso cumulativo das fases de implementação da 
 
 ### 1. Modificações Realizadas
 - **Web DTOs com Validação Jakarta**:
-  - [`CreateCharacterRequest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/CreateCharacterRequest.java)
-  - [`UpdateCharacterRequest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/UpdateCharacterRequest.java)
-  - [`RollHpRequest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/RollHpRequest.java)
-  - [`CharacterSheetResponse.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/CharacterSheetResponse.java)
-  - [`CharacterSummaryResponse.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/CharacterSummaryResponse.java)
-  - [`AbilityRollResponse.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/AbilityRollResponse.java)
-  - [`HpRollResponse.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/HpRollResponse.java)
+  - [`CreateCharacterRequest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/CreateCharacterRequest.java), [`UpdateCharacterRequest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/UpdateCharacterRequest.java), [`RollHpRequest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/RollHpRequest.java), [`CharacterSheetResponse.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/CharacterSheetResponse.java), [`CharacterSummaryResponse.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/CharacterSummaryResponse.java), etc.
 - **Controller REST**:
-  - [`PlayerCharacterController.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/PlayerCharacterController.java):
-    - `POST /api/characters/ability-rolls` (requer `X-User-Id`): `201 Created` / `200 OK`
-    - `POST /api/characters/hp-rolls` (requer `X-User-Id`): `201 Created` / `200 OK`
-    - `POST /api/characters` (requer `X-User-Id`): `201 Created` com header `Location`
-    - `GET /api/characters` (requer `X-User-Id`): `200 OK` (lista de resumos do usuário)
-    - `GET /api/characters/{id}` (requer `X-User-Id`): `200 OK` (ficha completa hidratada)
-    - `PUT /api/characters/{id}` (requer `X-User-Id`): `200 OK` (apenas campos mutáveis)
-    - `DELETE /api/characters/{id}` (requer `X-User-Id`): `204 No Content`
+  - [`PlayerCharacterController.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/PlayerCharacterController.java) implementando `POST /ability-rolls`, `POST /hp-rolls`, `POST`, `GET`, `GET/{id}`, `PUT/{id}`, `DELETE/{id}` exigindo `X-User-Id`.
 - **Tratamento de Exceções Global RFC 7807**:
-  - [`GlobalExceptionHandler.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/core/web/GlobalExceptionHandler.java):
-    - `CharacterNotFoundException` -> `404 Not Found`
-    - `CharacterValidationException` / `InvalidRollTokenException` -> `422 Unprocessable Entity`
-    - `RollConflictException` -> `409 Conflict`
-    - `MissingRequestHeaderException` (`X-User-Id`) -> `401 Unauthorized`
+  - [`GlobalExceptionHandler.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/core/web/GlobalExceptionHandler.java) (`404` para Not Found/IDOR, `422` para Validation/Tokens, `409` para conflito de rolls, `401` para header ausente).
 - **Testes de API Web (MockMvc)**:
   - [`PlayerCharacterControllerTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/PlayerCharacterControllerTest.java) cobrindo TP-01, TP-02, TP-03, TE-01, TE-02, TE-03 e falta do header `X-User-Id`.
 
 ### 2. Resultados de Verificação
 - `mvn -f player-character-service/backend/pom.xml test -Dtest="*PlayerCharacterController*Test"` -> `BUILD SUCCESS` (8 testes).
-- Build completo de verificação:
-  `mvn -f player-character-service/backend/pom.xml clean verify` -> `BUILD SUCCESS` (119 testes executados, 0 falhas, 0 erros, 1 skipped intencional).
 
 ---
 
-## Verificação e Próximos Passos
-Todas as tarefas de implementação, segurança e testes unitários/integrados das Fases 1 a 5 foram concluídas com êxito. O sistema está pronto para atualização dos delta specs e consolidação final na Fase 6.
+## Fase 6: Validação Completa, Delta Specs & Consolidação
+
+### 1. Documentação Atualizada
+- **Delta Spec de Domínio**:
+  - [`player-character-domain-delta.md`](file:///D:/Projects/Dungeoneer/openspec/changes/character-crud-backend/specs/player-character-domain-delta.md): Documentados todos os contratos REST, regras de Ability Scores (`STANDARD_ARRAY`, `POINT_BUY`, `ROLLED`), regras de Dual Ruleset ASI (2014 linhagem vs 2024 antecedente), cálculo de HP server-side (`MAX`, `AVERAGE`, `ROLLED`), restrições de mutabilidade e isolamento de tenant via `X-User-Id`.
+- **Delta Spec do Modelo de Dados**:
+  - [`player-character-data-model-delta.md`](file:///D:/Projects/Dungeoneer/openspec/changes/character-crud-backend/specs/player-character-data-model-delta.md): Documentadas as colunas adicionadas a `characters` (`notes`, `hp_calculation_method`, `has_pending_level_choices`, `user_id NOT NULL`), a tabela `class_progressions` e as tabelas de rolagens com índices parciais únicos (`ability_rolls` e `hp_rolls`).
+- **Checklist de Tarefas**:
+  - [`tasks.md`](file:///D:/Projects/Dungeoneer/openspec/changes/character-crud-backend/tasks.md): Todas as tarefas marcadas com `[x]`.
+
+### 2. Quality Gate Final do Maven
+
+```bash
+mvn -f player-character-service/backend/pom.xml clean verify
+```
+- **Resultado:** `BUILD SUCCESS`
+- **Métricas:** **119 testes executados, 0 falhas, 0 erros, 1 skipped intencional**.
+- Todas as camadas (Domínio, Aplicação, Persistência, Web e Core) testadas rigorosamente cobrindo fluxos felizes e de exceção.
+
+---
+
+## Próximos Passos Recomendados
+
+1. **Validação Final Pré-Arquivo**:
+   - Executar `sdd-spec-validate` para conferência final dos critérios de aceitação.
+2. **Arquivamento da Especificação**:
+   - Executar a skill `sdd-spec-archive` para consolidar os deltas em `openspec/specs/` e arquivar `character-crud-backend`.
+3. **Integração no Frontend**:
+   - Conectar os novos endpoints do backend ao Wizard de Criação e Dashboard da Ficha de Personagem no `dungeoneer-frontend`.

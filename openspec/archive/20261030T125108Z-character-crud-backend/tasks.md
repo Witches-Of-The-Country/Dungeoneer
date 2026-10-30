@@ -48,5 +48,5 @@
 - [x] All implementation tasks complete
 - [x] All security validation tasks complete
 - [x] All tests passing (`mvn -f player-character-service/backend/pom.xml clean verify`)
-- [ ] Proposal acceptance criteria verified (run `sdd-spec-validate`)
-- [ ] Ready for `sdd-spec-archive`
+- [x] Proposal acceptance criteria verified (run `sdd-spec-validate`)
+- [x] Ready for `sdd-spec-archive`

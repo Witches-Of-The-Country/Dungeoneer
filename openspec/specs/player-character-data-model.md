@@ -1,7 +1,7 @@
 ---
 id: "player-character-data-model"
 title: "Player Character Data Model & Persistence — Living Specification"
-version: "1.1.0"
+version: "1.2.0"
 status: "active"
 owners:
   - "@jaca"
@@ -53,6 +53,8 @@ erDiagram
     characters ||--o{ character_feats : "has"
     characters ||--o{ character_conditions : "suffers"
 
+    hp_rolls }o--|| archetypes : "references"
+
     class_progressions }o--|| archetypes : "is a"
     class_progressions }o--o| subclasses : "specializes in"
 
@@ -81,11 +83,33 @@ erDiagram
         int proficiency_bonus
         varchar ruleset
         varchar ability_score_method
+        varchar hp_calculation_method
+        boolean has_pending_level_choices
+        text notes
         uuid lineage_id FK
         uuid background_id FK
-        uuid user_id FK "nullable"
+        uuid user_id FK "NOT NULL"
         timestamptz created_at
         timestamptz updated_at
+    }
+
+    ability_rolls {
+        uuid id PK
+        uuid user_id "indexed"
+        int[] rolled_scores
+        jsonb dice_breakdown
+        boolean used
+        timestamptz created_at
+    }
+
+    hp_rolls {
+        uuid id PK
+        uuid user_id "indexed"
+        uuid archetype_id FK
+        int target_level
+        int[] rolled_hp_per_level
+        boolean used
+        timestamptz created_at
     }
 
     ability_scores {
@@ -259,11 +283,17 @@ erDiagram
 | `proficiency_bonus` | `INT` | NOT NULL, DEFAULT 2 | |
 | `ruleset` | `VARCHAR(10)` | NOT NULL, CHECK IN ('SRD_2014', 'SRD_2024') | |
 | `ability_score_method` | `VARCHAR(20)` | NOT NULL | STANDARD_ARRAY, POINT_BUY, ROLLED |
+| `hp_calculation_method` | `VARCHAR(15)` | NOT NULL, DEFAULT 'MAX' | MAX, AVERAGE, ROLLED |
+| `has_pending_level_choices` | `BOOLEAN` | NOT NULL, DEFAULT FALSE | Flag set when created at level > 1, deferred until interactive level-up wizards |
+| `notes` | `TEXT` | NOT NULL, DEFAULT '' | Player notes and campaign annotations |
 | `lineage_id` | `UUID` | FK → lineages.id, NOT NULL | |
 | `background_id` | `UUID` | FK → backgrounds.id, NOT NULL | |
-| `user_id` | `UUID` | NULLABLE | Logical reference to auth-service users.id (no cross-schema FK) |
+| `user_id` | `UUID` | NOT NULL | Logical reference to auth-service users.id (enforced for tenant isolation) |
 | `created_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT NOW() | |
 | `updated_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT NOW() | |
+
+**Indexes**:
+- `CREATE INDEX IF NOT EXISTS idx_characters_user_id ON player_character.characters(user_id);`
 
 #### `ability_scores`
 
@@ -287,7 +317,41 @@ erDiagram
 | `archetype_id` | `UUID` | FK → archetypes.id, NOT NULL |
 | `subclass_id` | `UUID` | FK → subclasses.id, NULLABLE |
 | `class_level` | `INT` | NOT NULL, CHECK (1-20) |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT NOW() |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT NOW() |
 | UNIQUE | | (`character_id`, `archetype_id`) |
+
+**Indexes**:
+- `CREATE INDEX IF NOT EXISTS idx_class_progressions_character_id ON player_character.class_progressions(character_id);`
+
+#### `ability_rolls`
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | `UUID` | PK, DEFAULT gen_random_uuid() | |
+| `user_id` | `UUID` | NOT NULL | Authenticated user ID |
+| `rolled_scores` | `INT[]` | NOT NULL | 6 rolled ability scores (4d6 drop lowest) |
+| `dice_breakdown` | `JSONB` | NOT NULL, DEFAULT '[]' | Detailed 4d6 roll history and dropped dice per score |
+| `used` | `BOOLEAN` | NOT NULL, DEFAULT FALSE | Whether roll token has been consumed by character creation |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT NOW() | Audit timestamp |
+
+**Indexes**:
+- `CREATE UNIQUE INDEX IF NOT EXISTS idx_unused_ability_roll ON player_character.ability_rolls(user_id) WHERE used = FALSE;` (Single-chance guarantee preventing reroll farming)
+
+#### `hp_rolls`
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | `UUID` | PK, DEFAULT gen_random_uuid() | |
+| `user_id` | `UUID` | NOT NULL | Authenticated user ID |
+| `archetype_id` | `UUID` | FK → archetypes.id, NOT NULL | Class archetype associated with the Hit Die |
+| `target_level` | `INT` | NOT NULL, CHECK (target_level >= 2 AND target_level <= 20) | Character level rolled for |
+| `rolled_hp_per_level` | `INT[]` | NOT NULL | Array of rolled hit point increases (levels 2..N) |
+| `used` | `BOOLEAN` | NOT NULL, DEFAULT FALSE | Whether roll token has been consumed |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT NOW() | Audit timestamp |
+
+**Indexes**:
+- `CREATE UNIQUE INDEX IF NOT EXISTS idx_unused_hp_roll ON player_character.hp_rolls(user_id, archetype_id, target_level) WHERE used = FALSE;` (Single-chance guarantee per user, class, and target level)
 
 #### `character_spells`
 
@@ -463,6 +527,17 @@ erDiagram
 
 ---
 
+## Flyway Migration History
+
+| Version | Script | Description |
+|---------|--------|-------------|
+| V1 | `V1__init_player_character_schema.sql` | Initial core character and reference data tables |
+| V2 | `V2__seed_srd_2014_reference_data.sql` | Seed SRD 2014 reference data (classes, lineages, backgrounds, spells, feats) |
+| V3 | `V3__align_reference_data_schema_and_seed_2024.sql` | Align reference data schemas, add unique constraints, JSONB ASI, and seed SRD 2024 |
+| V4 | `V4__add_character_crud_and_roll_tables.sql` | Add character CRUD fields, class progressions, ability rolls, and hp rolls with single-chance indexes |
+
+---
+
 ## Out of Scope
 
 - `campaign` database schema (governed by `openspec/specs/campaign-domain.md`).
@@ -473,5 +548,6 @@ erDiagram
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.2.0 | 2026-10-30 | @jaca | Added character CRUD metadata, notes, single-chance ability_rolls and hp_rolls, and class_progressions (character-crud-backend) |
 | 1.1.0 | 2026-10-30 | @jaca | Aligned schema to player_character, added V2/V3 reference tables with dual ruleset unique constraints, ASI JSONB/arrays, and origin feat metadata (reference-data-backend) |
 | 1.0.0 | 2026-10-29 | @jaca | Migrated from `docs/spec/res/data-models.md` and `docs/spec/res/er-diagram.md` |

@@ -1,7 +1,7 @@
 ---
 id: "player-character-domain"
 title: "Player Character Domain & API — Living Specification"
-version: "1.0.0"
+version: "1.1.0"
 status: "active"
 owners:
   - "@jaca"
@@ -68,8 +68,8 @@ flowchart LR
     DM --> UC7
 ```
 
-- **[RF-01] Create & Manage Character (`UC1`)**: Define base `AbilityScores` (via `STANDARD_ARRAY`, `POINT_BUY` 27-point budget, or server-validated `ROLLED` 4d6-drop-lowest), select `Lineage` and `Background` (injecting corresponding `Feat`s via `RulesEngine`), and initialize the first `ClassProgression`.
-  - *Implementation Status*: `PlayerCharacter`, `AbilityScores`, `Ruleset`, `AbilityScoreMethod`, `CreateCharacterUseCase`, outbound repository ports/JPA adapters, and `GlobalExceptionHandler` are implemented; `PlayerCharacterController` (`POST /api/characters`) has failing MockMvc tests written (TDD RED phase) ready for GREEN phase implementation.
+- **[RF-01] Create & Manage Character (`UC1`)**: Define base `AbilityScores` (via `STANDARD_ARRAY`, `POINT_BUY` 27-point budget, or server-validated `ROLLED` 4d6-drop-lowest), select `Lineage` and `Background` (applying Dual Ruleset ASI via `RulesEngine`), calculate initial level (1–20) HP (`MAX`, `AVERAGE`, `ROLLED`), and initialize `ClassProgression`. Endpoints enforce strict tenant isolation scoped by `X-User-Id`.
+  - *Implementation Status*: Implemented and verified (`POST /api/characters`, `GET /api/characters`, `GET /api/characters/{id}`, `PUT /api/characters/{id}`, `DELETE /api/characters/{id}`, `POST /api/characters/ability-rolls`, `POST /api/characters/hp-rolls`).
 - **[RF-02] Level Up & Multiclass (`UC2`)**: Increment levels on an existing `ClassProgression` or add a new `ClassProgression` (validating multiclass ability score prerequisites), select a `Subclass` at the archetype's subclass threshold level, and recalculate proficiency bonus, HP, and `SpellcastingStrategy` slots.
 - **[RF-03] Spell Management & Search (`UC3`)**: Query available spells filtered by class, level, school, and name; learn/prepare spells on a character; and track daily spell slot consumption and recovery.
 - **[RF-04] Action & Dice Roll Resolution (`UC4`)**: Instantiate and resolve `CheckRoll` (attacks, skill checks, saving throws with advantage/disadvantage/proficiency), `DamageRoll`, and `HealRoll` based on the actor's `AbilityScores`.
@@ -324,17 +324,21 @@ classDiagram
 
 ## REST API Contracts (`player-character-service`)
 
-### Character Management Endpoints
+All `/api/characters/**` endpoints require the `X-User-Id` header (`UUID`) and enforce strict user scoping (IDOR / BOLA protection returning `404 Not Found`).
+
+### Character Management & Roll Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/characters` | Create a new character |
-| `GET` | `/api/characters` | List all characters |
-| `GET` | `/api/characters/{id}` | Get character by ID |
-| `PUT` | `/api/characters/{id}` | Update character |
-| `DELETE` | `/api/characters/{id}` | Delete character |
-| `POST` | `/api/characters/{id}/level-up` | Level up a character |
-| `POST` | `/api/characters/{id}/multiclass` | Add a new class to a character |
+| `POST` | `/api/characters/ability-rolls` | Generate or retrieve idempotent `4d6kh3` ability roll token for `X-User-Id` |
+| `POST` | `/api/characters/hp-rolls` | Generate or retrieve idempotent Hit Die rolls for level > 1 (`{ archetypeId, level }`) |
+| `POST` | `/api/characters` | Create a new character with server-side ASI, HP calculation, and roll token consumption |
+| `GET` | `/api/characters` | List all character summaries owned by `X-User-Id` ordered by `updated_at DESC` |
+| `GET` | `/api/characters/{id}` | Get full hydrated character sheet by ID (returns 404 if not owned) |
+| `PUT` | `/api/characters/{id}` | Update mutable sheet fields (`name`, `hitPointsCurrent`, `hitPointsTemp`, `notes`) |
+| `DELETE` | `/api/characters/{id}` | Delete character owned by `X-User-Id` (`204 No Content`) |
+| `POST` | `/api/characters/{id}/level-up` | Level up a character (deferred) |
+| `POST` | `/api/characters/{id}/multiclass` | Add a new class to a character (deferred) |
 
 ### Spell Search Endpoints
 
@@ -364,26 +368,27 @@ classDiagram
 
 ## Non-Functional Requirements
 
-- **[RNF-01] Inbound DTO Validation**: All incoming request DTOs in `application/dto/` must validate fields using Jakarta Validation annotations (`@NotNull`, `@NotBlank`, `@Min`, `@Max`, `@Valid`).
+- **[RNF-01] Inbound DTO Validation**: All incoming request DTOs in `application/dto/` and `adapter/in/web/dto/` must validate fields using Jakarta Validation annotations (`@NotNull`, `@NotBlank`, `@Min`, `@Max`, `@Valid`, `@Size`).
 - **[RNF-02] RFC 7807 `ProblemDetail` Error Mapping**: All domain exceptions must map to deterministic HTTP status codes via `@ControllerAdvice`:
 
 | Domain Exception | HTTP Status | Example |
 |-----------------|-------------|---------|
-| `CharacterNotFoundException` | `404 Not Found` | Character ID doesn't exist |
-| `InvalidAbilityScoreException` | `422 Unprocessable Entity` | Point Buy exceeds 27 points |
+| `CharacterNotFoundException` | `404 Not Found` | Character ID doesn't exist or belongs to another user (IDOR) |
+| `CharacterValidationException` | `422 Unprocessable Entity` | Point Buy != 27 points or invalid background ASI distribution |
+| `InvalidRollTokenException` | `422 Unprocessable Entity` | Roll token doesn't match user or archetype |
+| `RollConflictException` | `409 Conflict` | Attempted reuse of already consumed roll token |
+| `MissingRequestHeaderException` | `401 Unauthorized` | Missing required `X-User-Id` authorization header |
 | `MulticlassPrerequisiteException` | `422 Unprocessable Entity` | Doesn't meet ability score minimum |
 | `SpellSlotExhaustedException` | `409 Conflict` | No spell slots remaining |
-| `RulesetMismatchException` | `409 Conflict` | 2014 character trying to join 2024 campaign |
 
 Example `ProblemDetail` payload:
 ```json
 {
-  "type": "https://dungeoneer.app/errors/invalid-ability-score",
-  "title": "Invalid Ability Score",
+  "type": "https://dungeoneer.app/errors/validation",
+  "title": "Validation Error",
   "status": 422,
-  "detail": "Point Buy total exceeds the 27-point budget. Current total: 31.",
-  "instance": "/api/characters",
-  "timestamp": "2026-08-22T03:00:00Z"
+  "detail": "Point Buy total cost must be exactly 27 points. Current total cost: 31.",
+  "instance": "/api/characters"
 }
 ```
 
@@ -402,4 +407,5 @@ Example `ProblemDetail` payload:
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.1.0 | 2026-10-30 | @jaca | Implemented character CRUD, single-chance server-side rolls, Dual Ruleset ASI, server-side HP, and X-User-Id scoping (`character-crud-backend`) |
 | 1.0.0 | 2026-10-29 | @jaca | Migrated from `README.md`, `docs/USE-CASES.md`, `docs/spec/SPEC.md`, `docs/STATE.md`, and `docs/spec/res/api-contracts.md` |
