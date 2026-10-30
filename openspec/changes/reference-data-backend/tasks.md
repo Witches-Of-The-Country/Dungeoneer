@@ -14,20 +14,20 @@
 - [x] Write Flyway migration `V3__seed_srd_2014_and_2024_reference_data.sql` (seed 13 classes, 9 lineages, and 6 backgrounds for `SRD_2014` and `SRD_2024`)
 - [x] Update `PlayerCharacterJpaEntity` and `AbilityScoresJpaEntity` with `schema = "player_character"`
 - [x] Implement pure Java domain models `Archetype`, `Lineage`, `Background`, `HitDiceEnum`, and `SpellcastingType`
-- [ ] Create `ReferenceDataRepository` outbound port and `GetReferenceDataUseCase` inbound port
-- [ ] Implement `ArchetypeJpaEntity`, `LineageJpaEntity`, `BackgroundJpaEntity`, and `ReferenceDataPersistenceAdapter`
+- [x] Create `ReferenceDataRepository` outbound port and `GetReferenceDataUseCase` inbound port
+- [x] Implement `ArchetypeJpaEntity`, `LineageJpaEntity`, `BackgroundJpaEntity`, and `ReferenceDataPersistenceAdapter`
 - [ ] Implement `ReferenceDataService` and `ReferenceDataController` (`GET /api/reference/classes`, `/lineages`, `/backgrounds`)
 
 ## Security Validation Tasks
 
 - [ ] Validate `ruleset` query parameter against `Ruleset` enum and map invalid values to `422 Unprocessable Entity` ProblemDetail
-- [ ] Confirm no secrets or credentials are hardcoded in migrations or configuration
+- [x] Confirm no secrets or credentials are hardcoded in migrations or configuration
 
 ## Shift-Left Test Suite Tasks
 
 ### Happy Path
-- [x] Write unit tests for `Archetype`, `Lineage`, `Background` domain models (TP-01)
-- [ ] Write Testcontainers integration tests for `ReferenceDataPersistenceAdapter` verifying `V2` and `V3` seed counts (13 classes, 9 lineages, 6 backgrounds per ruleset) (TP-02)
+- [x] Write unit tests for `Archetype`, `Lineage`, `Background`, and `ReferenceDataService` (TP-01)
+- [x] Write Testcontainers integration tests for `ReferenceDataPersistenceAdapter` verifying `V2` and `V3` seed counts (13 classes, 9 lineages, 6 backgrounds per ruleset) (TP-02)
 - [ ] Write MockMvc tests for `GET /api/reference/classes`, `/lineages`, and `/backgrounds` (TP-03)
 
 ### Edge Cases & Failure Modes

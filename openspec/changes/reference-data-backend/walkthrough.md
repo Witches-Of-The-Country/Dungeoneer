@@ -45,8 +45,52 @@
 
 ---
 
-### Próxima Etapa: Fase 3 (Camada de Aplicação & Portas Hexagonais)
-- Criação das portas de entrada (`GetReferenceDataUseCase`) e saída (`ReferenceDataRepository`).
-- Criação dos DTOs imutáveis de resposta (`ArchetypeDto`, `LineageDto`, `BackgroundDto`).
-- Implementação do caso de uso `ReferenceDataService`.
+### Fase 3: Camada de Aplicação & Portas Hexagonais (✅ Concluída)
+- **O que foi feito:**
+  - Criada a porta de entrada [`GetReferenceDataUseCase.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/port/in/GetReferenceDataUseCase.java):
+    - `List<ArchetypeDto> getClasses(Ruleset ruleset);`
+    - `List<LineageDto> getLineages(Ruleset ruleset);`
+    - `List<BackgroundDto> getBackgrounds(Ruleset ruleset);`
+  - Criada a porta de saída [`ReferenceDataRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/port/out/ReferenceDataRepository.java):
+    - `findArchetypesByRuleset`, `findLineagesByRuleset`, `findBackgroundsByRuleset`.
+  - Criados os DTOs imutáveis records em `application/dto/`:
+    - [`ArchetypeDto.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/dto/ArchetypeDto.java)
+    - [`LineageDto.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/dto/LineageDto.java)
+    - [`BackgroundDto.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/dto/BackgroundDto.java)
+  - Implementado o serviço de aplicação [`ReferenceDataService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/ReferenceDataService.java) (`@Service`, `@Transactional(readOnly = true)`).
+  - Desenvolvida a suíte de testes unitários com Mockito [`ReferenceDataServiceTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/application/service/ReferenceDataServiceTest.java).
+- **Validação:**
+  - `ReferenceDataServiceTest` executado com 100% de sucesso (3 testes passando).
+
+---
+
+### Fase 4: Adaptadores de Persistência JPA com Testcontainers (✅ Concluída)
+- **O que foi feito:**
+  - Implementadas as entidades JPA com mapeamento explícito para `schema = "player_character"`:
+    - [`ArchetypeJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/ArchetypeJpaEntity.java): mapeia colunas de proficiências (`text[]`), `hit_dice`, `spellcasting_type`, com métodos de conversão bidirecional `toDomain()` e `fromDomain()`.
+    - [`LineageJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/LineageJpaEntity.java): mapeia `ability_bonuses` (`jsonb`) com `@JdbcTypeCode(SqlTypes.JSON)` e `traits_summary` (`text[]`), com `toDomain()` e `fromDomain()`.
+    - [`BackgroundJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/BackgroundJpaEntity.java): mapeia proficiências e campos D&D 2024 (`allowed_ability_bonuses`, `origin_feat_name`, `origin_feat_description`), com `toDomain()` e `fromDomain()`.
+  - Criadas as interfaces Spring Data JPA:
+    - [`SpringDataArchetypeRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/SpringDataArchetypeRepository.java)
+    - [`SpringDataLineageRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/SpringDataLineageRepository.java)
+    - [`SpringDataBackgroundRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/SpringDataBackgroundRepository.java)
+  - Implementado o adaptador hexagonal [`ReferenceDataPersistenceAdapter.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/ReferenceDataPersistenceAdapter.java):
+    - Implementa `ReferenceDataRepository`.
+    - Trata filtro de `ruleset` nulo consultando `findAll()`, ou filtra por `findByRuleset(ruleset)`.
+  - Desenvolvida a suíte de testes de integração com Testcontainers:
+    - [`ReferenceDataPersistenceAdapterTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/out/persistence/ReferenceDataPersistenceAdapterTest.java): valida TP-02 garantindo as contagens exatas das sementes das migrações `V2` e `V3` (13 classes, 9 linhagens, 6 antecedentes por ruleset; 26, 18 e 12 no total).
+- **Validação:**
+  - `mvn -f player-character-service/backend/pom.xml test` executado com sucesso: **69 testes passando, 0 falhas, 0 erros**.
+
+---
+
+### Próxima Etapa: Fase 5 (Adaptador Web REST & Endpoints da API)
+- Implementação de `ReferenceDataController` em `adapter/in/web/`:
+  - `GET /api/reference/classes`
+  - `GET /api/reference/lineages`
+  - `GET /api/reference/backgrounds`
+  - Suporte ao query parameter opcional `?ruleset=SRD_2014|SRD_2024`.
+  - Validação estrita de `ruleset` com mapeamento para `422 Unprocessable Entity` RFC 7807 `ProblemDetail`.
+- Testes MockMvc (`ReferenceDataControllerTest`) cobrindo TP-03 e TE-01.
+
 
