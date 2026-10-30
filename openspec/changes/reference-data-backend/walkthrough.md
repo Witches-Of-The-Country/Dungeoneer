@@ -26,6 +26,27 @@
 
 ---
 
-### Próxima Etapa: Fase 2 (Modelos de Domínio Puros em Java com TDD)
-- Criação dos modelos de domínio `Archetype`, `Lineage`, `Background`, `HitDiceEnum`, `SpellcastingType` na camada `domain/model` sem qualquer import de framework.
-- Criação da suíte de testes unitários de domínio cobrindo invariantes e métodos auxiliares.
+### Fase 2: Modelos de Domínio Puros em Java com TDD (✅ Concluída)
+- **O que foi feito:**
+  - Criados os enums de domínio:
+    - [`HitDiceEnum.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/HitDiceEnum.java): enum com valores de dados de vida (`D6`, `D8`, `D10`, `D12`), cálculo de média de HP e método utilitário `fromString`.
+    - [`SpellcastingType.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/SpellcastingType.java): enum com tipos de conjuração (`NONE`, `HALF`, `FULL`, `PACT`).
+  - Implementadas as entidades de domínio ricas e imutáveis com **zero dependências de framework**:
+    - [`Archetype.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/Archetype.java): id, nome, hitDice, proficiências em salvaguardas/armaduras/armas, tipo e atributo de conjuração, ruleset, source e ownerId.
+    - [`Lineage.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/Lineage.java): id, nome, descrição, velocidade, tamanho, mapa de bônus de atributos (ASI), sumário de traços, ruleset, source e ownerId.
+    - [`Background.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/Background.java): id, nome, descrição, proficiências em perícias/ferramentas, idiomas, lista de atributos permitidos para ASI (2024), nome e descrição do talento de origem (2024), ruleset, source e ownerId.
+  - Desenvolvida a suíte de testes unitários de domínio (TDD Red ➔ Green):
+    - [`ArchetypeTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/domain/model/ArchetypeTest.java) (5 testes)
+    - [`LineageTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/domain/model/LineageTest.java) (5 testes)
+    - [`BackgroundTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/domain/model/BackgroundTest.java) (5 testes)
+- **Validação:**
+  - 15 novos testes unitários executados com sucesso.
+  - Suíte completa do serviço: **63 testes executados com 100% de sucesso**.
+
+---
+
+### Próxima Etapa: Fase 3 (Camada de Aplicação & Portas Hexagonais)
+- Criação das portas de entrada (`GetReferenceDataUseCase`) e saída (`ReferenceDataRepository`).
+- Criação dos DTOs imutáveis de resposta (`ArchetypeDto`, `LineageDto`, `BackgroundDto`).
+- Implementação do caso de uso `ReferenceDataService`.
+
