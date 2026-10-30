@@ -13,18 +13,14 @@ Dungeoneer is a D&D 5e/2024 companion web app for managing character sheets, cam
 
 | Document | Path | Load When |
 |----------|------|-----------|
-| **SPEC.md** | `docs/spec/SPEC.md` | Always — lightweight hub with context, roadmap, and architecture overview |
-| **Architecture Diagrams** | `docs/spec/res/architecture-diagram.md` | Working on system design, service boundaries, Docker topology |
-| **ER Diagrams** | `docs/spec/res/er-diagram.md` | Working on database schema, Flyway migrations, JPA entities |
-| **Data Models** | `docs/spec/res/data-models.md` | Working on database tables, columns, constraints |
-| **API Contracts** | `docs/spec/res/api-contracts.md` | Working on REST endpoints, error handling, gateway routing |
-| **Frontend Spec** | `docs/spec/res/frontend-spec.md` | Working on Next.js pages, UI design, components, data fetching |
-| **Infrastructure** | `docs/spec/res/infrastructure.md` | Working on Docker Compose, CI/CD, deployment, repo structure |
-| **Testing Strategy** | `docs/spec/res/testing-strategy.md` | Working on test suites, JaCoCo, TDD workflow |
-| **Project State** | `docs/STATE.md` | Tracking current progress, implemented features, and next steps |
-| **Use Cases** | `docs/USE-CASES.md` | Domain use cases with actor diagram |
-| **Architecture (Legacy)** | `docs/ARCHITECTURE.md` | Clean Architecture directory structure reference |
-| **README** | `README.md` | Domain model class diagrams and design decisions |
+| **SDD Stack Contract** | `openspec/specs/sdd-stack-contract.md` | Always — technology stack, build/test commands, database, and architectural rules |
+| **System Architecture** | `openspec/specs/system-architecture.md` | Always — platform vision, C4 diagrams, Hexagonal package rules, Dual Ruleset strategy, and gateway routing |
+| **Player Character Domain & API** | `openspec/specs/player-character-domain.md` | Working on character domain models, GoF patterns, use cases (UC1–UC5), SRD scope, or REST endpoints |
+| **Player Character Data Model** | `openspec/specs/player-character-data-model.md` | Working on `player_character` PostgreSQL schema, ER diagrams, tables, constraints, or Flyway migrations |
+| **Campaign Domain** | `openspec/specs/campaign-domain.md` | Working on Phase 2/3 campaigns, NPCs, encounters (UC6–UC7), or `campaign` schema |
+| **Frontend Web App** | `openspec/specs/frontend-web-app.md` | Working on Next.js 16 pages, Dark Fantasy RPG UI tokens, Wizard, Character Sheet Dashboard, or TanStack Query |
+| **Infrastructure & Testing** | `openspec/specs/infrastructure-and-testing.md` | Working on Docker Compose, CI/CD pipelines, deployment, TDD workflow, or JaCoCo coverage |
+| **README** | `README.md` | Domain model class diagrams and design decisions (pt-BR overview) |
 
 ## Core Architectural Patterns
 
