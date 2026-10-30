@@ -10,9 +10,9 @@
 
 ## Implementation Tasks
 
-- [ ] Write Flyway migration `V2__align_schema_and_create_reference_tables.sql` (create `player_character` schema, move `characters` & `ability_scores`, create `archetypes`, `lineages`, `backgrounds`)
-- [ ] Write Flyway migration `V3__seed_srd_2014_and_2024_reference_data.sql` (seed 13 classes, 9 lineages, and 6 backgrounds for `SRD_2014` and `SRD_2024`)
-- [ ] Update `PlayerCharacterJpaEntity` and `AbilityScoresJpaEntity` with `schema = "player_character"`
+- [x] Write Flyway migration `V2__align_schema_and_create_reference_tables.sql` (create `player_character` schema, move `characters` & `ability_scores`, create `archetypes`, `lineages`, `backgrounds`)
+- [x] Write Flyway migration `V3__seed_srd_2014_and_2024_reference_data.sql` (seed 13 classes, 9 lineages, and 6 backgrounds for `SRD_2014` and `SRD_2024`)
+- [x] Update `PlayerCharacterJpaEntity` and `AbilityScoresJpaEntity` with `schema = "player_character"`
 - [ ] Implement pure Java domain models `Archetype`, `Lineage`, `Background`, `HitDiceEnum`, and `SpellcastingType`
 - [ ] Create `ReferenceDataRepository` outbound port and `GetReferenceDataUseCase` inbound port
 - [ ] Implement `ArchetypeJpaEntity`, `LineageJpaEntity`, `BackgroundJpaEntity`, and `ReferenceDataPersistenceAdapter`

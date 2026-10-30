@@ -1,7 +1,7 @@
 ---
 id: "system-architecture"
 title: "Dungeoneer System Architecture — Living Specification"
-version: "1.0.0"
+version: "1.1.0"
 status: "active"
 owners:
   - "@jaca"
@@ -75,6 +75,7 @@ Dungeon Masters and Players of Dungeons & Dragons need a unified, modern tool to
 | `db` | PostgreSQL 15 | Shared instance, schema-per-service |
 
 - **[RF-03] API Gateway Routing**: All external client traffic enters through `api-gateway` (`:9090`), which routes requests by path prefix:
+  - `/api/auth/**` → `auth-service:8082` (public endpoints: `POST /api/auth/register`, `POST /api/auth/login`)
   - `/api/characters/**` → `player-character-service:8080`
   - `/api/spells/**` → `player-character-service:8080`
   - `/api/reference/**` → `player-character-service:8080`
@@ -156,9 +157,10 @@ Dungeon Masters and Players of Dungeons & Dragons need a unified, modern tool to
 ```
 
 - **[RNF-02] Security Posture**:
-  - MVP Character Service runs with `SecurityConfig` permitting requests (`permitAll()`), with `user_id` columns as `NULLABLE` FK placeholders.
-  - Authentication flows are handled via `auth-service` and future Gateway JWT validation forwarding `X-User-Id`.
-  - CORS is configured at the **API Gateway** level only.
+  - `auth-service` authenticates users with BCrypt password hashing and issues HMAC-SHA256 signed JWTs (`sub` = user UUID) using `${JWT_SECRET}`.
+  - `api-gateway` validates Bearer JWTs on protected routes (`/api/characters/**`) and forwards the verified `X-User-Id` header to downstream microservices, stripping any client-supplied `X-User-Id`.
+  - Protected endpoints require verified `X-User-Id` and enforce character ownership.
+  - CORS is configured at the **API Gateway** level and on local dev services for direct browser access.
   - Secrets, passwords, and tokens must **NEVER** be hardcoded; always inject via environment variables.
 
 - **[RNF-03] Language & Localization**:
@@ -183,6 +185,7 @@ graph TB
     subgraph Dungeoneer["Dungeoneer Platform"]
         FE["dungeoneer-frontend<br/>(Next.js 16)"]
         GW["api-gateway<br/>(Spring Cloud Gateway)"]
+        AUTH["auth-service<br/>(Spring Boot 4.x)"]
         PCS["player-character-service<br/>(Spring Boot 4.x)"]
         CS["campaign-service<br/>(Spring Boot 4.x)<br/>[Phase 2]"]
         DB[("PostgreSQL 15<br/>(Shared Instance)")]
@@ -191,8 +194,10 @@ graph TB
     Player --> FE
     DM --> FE
     FE -->|"REST/HTTP"| GW
+    GW -->|"/api/auth/**"| AUTH
     GW -->|"/api/characters/**<br/>/api/spells/**<br/>/api/reference/**"| PCS
     GW -->|"/api/campaigns/**<br/>/api/npcs/**"| CS
+    AUTH -->|"JDBC<br/>schema: public"| DB
     PCS -->|"JDBC<br/>schema: player_character"| DB
     CS -->|"JDBC<br/>schema: campaign"| DB
     CS -->|"REST/HTTP<br/>(hydrate characters)"| GW
@@ -300,4 +305,5 @@ graph LR
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.1.0 | 2026-10-30 | @jaca | Integrated auth-service JWT architecture, routing, and security posture from auth-jwt-backend |
 | 1.0.0 | 2026-10-29 | @jaca | Migrated from `docs/spec/SPEC.md`, `docs/spec/res/architecture-diagram.md`, and `docs/ARCHITECTURE.md` into OpenSpec format |
