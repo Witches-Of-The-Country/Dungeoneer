@@ -1,7 +1,7 @@
 ---
 id: "infrastructure-and-testing"
 title: "Infrastructure, CI/CD & Testing Strategy — Living Specification"
-version: "1.0.0"
+version: "1.1.0"
 status: "active"
 owners:
   - "@jaca"
@@ -55,6 +55,10 @@ Secrets are never hardcoded. Services consume environment variables injected via
 | `SPRING_DATASOURCE_USERNAME` | backend services | `postgres` |
 | `SPRING_DATASOURCE_PASSWORD` | backend services | `${DB_PASSWORD}` |
 | `SPRING_PROFILES_ACTIVE` | all Spring services | `dev` |
+| `JWT_SECRET` | `auth-service`, `api-gateway` | `dungeoneer_default_development_secret_key_minimum_256_bits_length!` (≥ 32 bytes) |
+| `AUTH_SERVICE_URL` | `api-gateway` | `http://auth-service:8080` (Docker) / `http://localhost:8082` (local) |
+| `CHARACTER_SERVICE_URL` | `api-gateway` | `http://player-character-service:8080` (Docker) / `http://localhost:8080` (local) |
+| `CORS_ALLOWED_ORIGINS` | `api-gateway` | `http://localhost:3000` |
 | `NEXT_PUBLIC_API_URL` | `dungeoneer-frontend` | `http://localhost:9090` |
 
 ### [RF-03] Repository & Submodule Structure
@@ -164,4 +168,5 @@ Backend `pom.xml` files enforce the 80% coverage gate during `mvn verify`:
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.1.0 | 2026-10-30 | @jaca | Added api-gateway environment variables (JWT_SECRET, AUTH_SERVICE_URL, CHARACTER_SERVICE_URL, CORS_ALLOWED_ORIGINS) and routing integration (gateway-routing-and-cors) |
 | 1.0.0 | 2026-10-29 | @jaca | Migrated from `docs/spec/res/infrastructure.md` and `docs/spec/res/testing-strategy.md` |
