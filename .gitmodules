@@ -1,12 +1,12 @@
 [submodule "dungeoneer-frontend"]
 	path = dungeoneer-frontend
-	url = git@github.com:Witches-Of-The-Country/dungeoneer-frontend.git
+	url = https://github.com/Witches-Of-The-Country/dungeoneer-frontend.git
 [submodule "player-character-service"]
 	path = player-character-service
-	url = git@github.com:Witches-Of-The-Country/player-character-service.git
+	url = https://github.com/Witches-Of-The-Country/player-character-service.git
 [submodule "auth-service"]
 	path = auth-service
-	url = git@github.com:Witches-Of-The-Country/auth-service.git
+	url = https://github.com/Witches-Of-The-Country/auth-service.git
 [submodule "api-gateway"]
 	path = api-gateway
-	url = git@github.com:Witches-Of-The-Country/api-gateway.git
+	url = https://github.com/Witches-Of-The-Country/api-gateway.git
