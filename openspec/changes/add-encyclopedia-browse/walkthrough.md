@@ -16,3 +16,18 @@ Nesta fase inicial:
   - `specs/player-character-domain-delta.md`: Modelo de domínio `Item.java` e novos contratos de use case e repositório.
   - `specs/frontend-web-app-delta.md`: Rotas da enciclopédia, hooks TanStack Query e rodapé CC-BY 4.0.
   - `tasks.md`: Lista completa e atômica de tarefas de implementação, testes e validação.
+
+
+---
+
+## Fase 2: Migração de Banco (Flyway V7) e Índices Full-Text Search (GIN)
+
+Nesta fase:
+1. **Criação do Script Flyway `V7__create_spells_feats_items_and_fts_indexes.sql`**:
+   - Criação das tabelas `player_character.spells`, `player_character.feats` e `player_character.items`.
+   - Adicionadas colunas `slug VARCHAR(150)`, `name_en VARCHAR(150)`, `name VARCHAR(150)`, `description TEXT` e chave natural de unicidade `UNIQUE (ruleset, slug)`.
+   - Na tabela `items`, adicionada a coluna discriminadora `item_category VARCHAR(30)` (`EQUIPMENT`, `WEAPON`, `ARMOR`, `MAGIC`) e `rarity VARCHAR(30)`.
+   - Índices B-Tree compostos criados para ordenação alfabética e paginação por cursor: `(ruleset, name ASC, id ASC)`.
+   - Índices GIN de texto completo (FTS) criados com dicionário em português: `to_tsvector('portuguese', coalesce(name, '') || ' ' || coalesce(name_en, '') || ' ' || coalesce(description, ''))`.
+2. **Validação com Testcontainers PostgreSQL**:
+   - O teste de integração `ReferenceDataPersistenceAdapterTest` rodou a migração V7 com sucesso total sobre o contêiner PostgreSQL do Docker.
