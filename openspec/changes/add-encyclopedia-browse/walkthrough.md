@@ -119,3 +119,25 @@ Nesta fase:
 3. **Porta e Adaptador de Persistência**:
    - Porta `ReferenceDataRepository` e adaptador `ReferenceDataPersistenceAdapter` estendidos para atender consultas paginadas e FTS.
    - Testes de integração validados com sucesso no PostgreSQL via Testcontainers.
+
+
+---
+
+## Fase 4: Serviços de Aplicação, DTOs e Endpoints REST
+
+Nesta fase:
+1. **DTOs de Aplicação (`application/dto/`)**:
+   - `CursorPageResponse<T>` com campos `items`, `nextCursor`, `hasNext`, `pageSize`.
+   - `SpellDto`, `FeatDto`, `ItemDto` com métodos de conversão de entidades/domínio.
+2. **Caso de Uso e Serviço (`GetReferenceDataUseCase` & `ReferenceDataService`)**:
+   - Implementada paginação por cursor composta em Base64 seguro para URL no padrão `nome::uuid`.
+   - Estratégia de leitura `limit + 1` com corte seguro de página para derivação de `hasNext` e `nextCursor`.
+3. **Controller REST (`ReferenceDataController`)**:
+   - Endpoints implementados:
+     * `GET /api/reference/spells` com filtros de círculo (`level`), escola (`school`), regras (`ruleset`), busca (`q`), cursor e limite (`@Min(1) @Max(100)`).
+     * `GET /api/reference/feats` com filtros de regras (`ruleset`), busca (`q`), cursor e limite.
+     * `GET /api/reference/items` com filtros de categoria (`category`), raridade (`rarity`), regras (`ruleset`), busca (`q`), cursor e limite.
+     * `GET /api/reference/classes/paginated` e `GET /api/reference/lineages/paginated`.
+   - `GlobalExceptionHandler` estendido para interceptar `jakarta.validation.ConstraintViolationException` e retornar HTTP 400 Bad Request RFC 7807 ProblemDetail quando o limite ultrapassa 100.
+4. **Testes Unitários / MockMvc**:
+   - `ReferenceDataControllerTest` executado com 5 testes passando com 100% de sucesso.
