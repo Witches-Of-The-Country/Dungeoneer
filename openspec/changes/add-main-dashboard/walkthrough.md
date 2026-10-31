@@ -52,3 +52,19 @@ Nesta fase:
    - Criado `__tests__/encyclopedia-menu.test.tsx` cobrindo cenários TP-03, TP-04 e TE-02.
    - Validados a omissão de categorias restritas para jogadores comuns, a inclusão completa com badges para DMs e os destinos de rota de cada link.
    - 3 testes executados com 100% de aprovação.
+
+
+---
+
+## Fase 4: Páginas Placeholder de Monstros e NPCs ("Em breve") com Route Guard
+
+Nesta fase:
+1. **Criação das Páginas Placeholder**:
+   - `/encyclopedia/monsters/page.tsx`: Bestiário & Monstros exclusivo para Mestres. Apresenta card Dark Fantasy estilizado com ícone `Skull`, badge "Em breve" e descrição sobre o catálogo SRD de criaturas, com botão de retorno ao Dashboard.
+   - `/encyclopedia/npcs/page.tsx`: Galeria de NPCs para Mestres com ícone `UserCheck`, badge "Em breve" e descrição sobre gestão de NPCs para campanhas.
+2. **Defensive Route Guarding no Cliente**:
+   - Ambas as rotas verificam `isDM` via `useAuth()`.
+   - Caso um usuário com papel apenas `PLAYER` tente acessar a URL diretamente, visualiza uma tela de advertência estilizada com `ShieldAlert`: *"Acesso Restrito ao Mestre do Jogo"* e botão para retornar a `/characters`.
+3. **Testes Unitários (TDD)**:
+   - Criado `__tests__/encyclopedia-placeholders.test.tsx` com 4 testes abrangendo acesso autorizado (DM) e bloqueio defensivo (Player) para ambas as páginas.
+   - Suíte de 29 testes do frontend executada com sucesso total.
