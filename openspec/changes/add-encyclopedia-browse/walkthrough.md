@@ -55,3 +55,25 @@ Nesta fase:
    - *Fireball* -> **Bola de Fogo** (3º Círculo, Evocação)
 4. **Verificação Automatizada**:
    - Migração V8 executada e validada com sucesso via Testcontainers no PostgreSQL.
+
+
+---
+
+## Fase 2.2: Seed de Talentos SRD Traduzidos (Flyway V9)
+
+Nesta fase:
+1. **Dados de Origem em JSON**:
+   - `player-character-service/backend/src/main/resources/db/seed/feats_srd_2014.json`
+   - `player-character-service/backend/src/main/resources/db/seed/feats_srd_2024.json`
+   - Campos armazenados: `ruleset`, `slug`, `name_en`, `name`, `prerequisites`, `description`.
+2. **Migração Flyway V9**:
+   - `V9__seed_srd_feats.sql` implementado com inserções idempotentes via `ON CONFLICT (ruleset, slug) DO NOTHING`.
+3. **Amostra de Tradução para Revisão**:
+   - *Grappler* (2014) -> **Imobilizador** (Pré-requisito: Força 13+)
+   - *Alert* (2024) -> **Alerta** (Talento de Origem)
+   - *Magic Initiate* (2024) -> **Iniciado em Magia** (Talento de Origem)
+   - *Tough* (2024) -> **Vigoroso** (Talento de Origem)
+   - *Savage Attacker* (2024) -> **Atacante Selvagem** (Talento de Origem)
+   - *War Caster* (2024) -> **Conjurador de Batalha** (Pré-requisito: Nível 4+)
+4. **Verificação Automatizada**:
+   - Migração V9 testada e executada com sucesso via Testcontainers no PostgreSQL.
