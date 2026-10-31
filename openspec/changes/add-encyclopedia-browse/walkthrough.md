@@ -31,3 +31,27 @@ Nesta fase:
    - Índices GIN de texto completo (FTS) criados com dicionário em português: `to_tsvector('portuguese', coalesce(name, '') || ' ' || coalesce(name_en, '') || ' ' || coalesce(description, ''))`.
 2. **Validação com Testcontainers PostgreSQL**:
    - O teste de integração `ReferenceDataPersistenceAdapterTest` rodou a migração V7 com sucesso total sobre o contêiner PostgreSQL do Docker.
+
+
+---
+
+## Fase 2.1: Seed de Magias SRD Traduzidas (Flyway V8)
+
+Nesta fase:
+1. **Dados de Origem em JSON**:
+   - `player-character-service/backend/src/main/resources/db/seed/spells_srd_2014.json`
+   - `player-character-service/backend/src/main/resources/db/seed/spells_srd_2024.json`
+   - Campos armazenados: `ruleset`, `slug`, `name_en`, `name`, `level`, `school`, `casting_time`, `range_area`, `components`, `duration`, `description`.
+2. **Migração Flyway V8**:
+   - `V8__seed_srd_spells.sql` implementado com inserções idempotentes usando `ON CONFLICT (ruleset, slug) DO NOTHING` e dollar-quoting `$$...$$` nos textos das magias.
+3. **Amostra de Tradução para Revisão**:
+   - *Guidance* -> **Orientação** (Truque, Adivinhação)
+   - *Light* -> **Luz** (Truque, Evocação)
+   - *Mage Hand* -> **Mãos Mágicas** (Truque, Conjuração)
+   - *Cure Wounds* -> **Curar Ferimentos** (1º Círculo, Evocação / Abjuração)
+   - *Magic Missile* -> **Mísseis Mágicos** (1º Círculo, Evocação)
+   - *Shield* -> **Escudo Arcano** (1º Círculo, Abjuração)
+   - *Healing Word* -> **Palavra Curativa** (1º Círculo, Abjuração)
+   - *Fireball* -> **Bola de Fogo** (3º Círculo, Evocação)
+4. **Verificação Automatizada**:
+   - Migração V8 executada e validada com sucesso via Testcontainers no PostgreSQL.
