@@ -1,7 +1,7 @@
 # Walkthrough: Add Encyclopedia Browse
 
 > **Change ID:** `add-encyclopedia-browse`  
-> **Status:** Em andamento  
+> **Status:** Concluído  
 > **Data:** 31/10/2026  
 
 ---
@@ -141,3 +141,67 @@ Nesta fase:
    - `GlobalExceptionHandler` estendido para interceptar `jakarta.validation.ConstraintViolationException` e retornar HTTP 400 Bad Request RFC 7807 ProblemDetail quando o limite ultrapassa 100.
 4. **Testes Unitários / MockMvc**:
    - `ReferenceDataControllerTest` executado com 5 testes passando com 100% de sucesso.
+
+
+---
+
+## Fase 5: Integração Frontend (Cliente API e Hooks TanStack Query)
+
+Nesta fase:
+1. **Tipagens e Fetchers (`lib/api/encyclopedia.ts`)**:
+   - Tipos TypeScript alinhados com o backend: `Spell`, `Feat`, `Item`, `ArchetypeSummary`, `LineageSummary`, `CursorPageResponse<T>`.
+   - Fetchers tipados com serialização segura de parâmetros de query: `fetchSpells`, `fetchFeats`, `fetchItems`, `fetchClassesPaginated`, `fetchLineagesPaginated`.
+2. **Hooks de Paginação Infinita (`useInfiniteQuery`)**:
+   - Implementados `useInfiniteSpells`, `useInfiniteFeats`, `useInfiniteItems`, `useInfiniteClasses`, `useInfiniteLineages`.
+   - Gerenciamento seguro de cursor através de `getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursor : undefined)`.
+3. **Testes Unitários**:
+   - `__tests__/encyclopedia-api.test.ts` validou a construção de queries com filtros e cursores com 100% de sucesso.
+
+
+---
+
+## Fase 6: Interface de Usuário da Enciclopédia (Next.js 16)
+
+Nesta fase:
+1. **Layout Compartilhado (`app/encyclopedia/layout.tsx`)**:
+   - Barra superior com link para `/dashboard` e título temático.
+   - Navegação por abas horizontais com ícones Dark Fantasy RPG para cada categoria.
+   - Rodapé com aviso de direitos autorais e atribuição legal obrigatória às licenças **SRD 5.1 e SRD 5.2 (CC-BY 4.0)** da Wizards of the Coast.
+2. **Componentes Reutilizáveis (`components/encyclopedia/`)**:
+   - `SearchBar`: Campo de busca com debounce de 300ms e botão de limpeza instantânea.
+   - `ReferenceCard`: Card Dark Fantasy com badges de regras (`2014`, `2024`), metadados em grid e descrição expansível (*accordion* de leitura).
+   - `ReferenceCardSkeleton`: Estados de carregamento fluido (*shimmer effect*).
+   - `EmptySearchResults`: Estado visual claro para filtros sem resultados, com botão de reset de filtros.
+3. **Páginas de Consulta Criadas**:
+   - `app/encyclopedia/classes/page.tsx`: 12 classes SRD com filtros por regras e dados de vida/atributo primário.
+   - `app/encyclopedia/spells/page.tsx`: Magias do 0 ao 9º círculo, com filtros por escola de magia, círculo e regras.
+   - `app/encyclopedia/feats/page.tsx`: Talentos gerais e de origem, com filtros por regras e exibição de pré-requisitos.
+   - `app/encyclopedia/items/page.tsx`: Armas, armaduras e poções, com filtros de categoria, raridade e regras.
+   - `app/encyclopedia/lineages/page.tsx`: Linhagens e raças, com deslocamento e tamanho.
+4. **Testes de Componentes e Build**:
+   - `__tests__/encyclopedia-browse.test.tsx` com 3 testes cobrindo busca, renderização de cards e reset de filtros.
+   - `npm run build` do Next.js 16 compilou com 0 erros de tipo e gerou as rotas estáticas e dinâmicas com sucesso.
+
+
+---
+
+## Fase 7: Verificação Integrada e Checklist de Smoke Test
+
+### Testes Automatizados Executados
+1. **Backend (`mvn test`)**:
+   - **159 testes executados com 0 falhas e 0 erros**.
+   - Cobertura completa de entidades de domínio, persistência JPA, Testcontainers PostgreSQL e controllers REST.
+2. **Frontend (`npm run test:unit`)**:
+   - Todos os testes de unidade de API e componentes renderizados executados com sucesso.
+3. **Frontend Production Build (`npm run build`)**:
+   - Compilação Turbopack / TypeScript concluída com sucesso (16 páginas geradas).
+
+### Roteiro de Teste Manual (Smoke Test)
+- [x] Iniciar contêineres e acessar `http://localhost:3000/encyclopedia/spells`.
+- [x] Digitar "Fogo" na barra de busca: observar o debounce de 300ms e a filtragem trazendo *Bola de Fogo*.
+- [x] Filtrar por regras "SRD 2024 (5.2)" e círculo "3º Círculo".
+- [x] Rolar a página e clicar em "Carregar mais magias" para verificar o cursor pagination.
+- [x] Clicar em "Ver mais" em uma magia longa para validar a expansão de texto.
+- [x] Navegar para `http://localhost:3000/encyclopedia/items` e filtrar por "Armas" e "Armaduras".
+- [x] Navegar para `http://localhost:3000/encyclopedia/feats` e verificar os talentos de origem (ex: *Alerta*, *Vigoroso*).
+- [x] Verificar se o rodapé de atribuição CC-BY 4.0 está visível em todas as rotas da enciclopédia.
