@@ -68,3 +68,23 @@ Nesta fase:
 3. **Testes Unitários (TDD)**:
    - Criado `__tests__/encyclopedia-placeholders.test.tsx` com 4 testes abrangendo acesso autorizado (DM) e bloqueio defensivo (Player) para ambas as páginas.
    - Suíte de 29 testes do frontend executada com sucesso total.
+
+
+---
+
+## Fase 5: Integração no Layout do Dashboard, Navbar e Verificação Final
+
+Nesta fase:
+1. **Layout do Dashboard Unificado (`app/characters/page.tsx`)**:
+   - Reestruturado em duas seções bem definidas no padrão Dark Fantasy:
+     * **Seção 1**: Listagem de heróis ("Meus Personagens") com contagem, ações de abrir ficha, editar, excluir e botão de destaque "Criar Personagem".
+     * **Seção 2**: "Enciclopédia & Referências" renderizando `<EncyclopediaMenu />` em grid responsivo com compêndio de regras, magias, talentos, itens, linhagens, monstros e NPCs.
+2. **Atualização da Barra de Navegação (`components/navbar.tsx`)**:
+   - Adicionada identificação visual de papel: se o usuário possui a role `DUNGEON_MASTER`, exibe um badge sutil "Mestre" com ícone de coroa `Crown` ao lado do nome do usuário e no menu dropdown.
+3. **Testes de Integração e Build de Produção**:
+   - Criado `__tests__/main-dashboard.test.tsx` com 2 testes cobrindo a renderização simultânea da listagem de personagens e do menu de enciclopédia para jogadores normais e para mestres.
+   - Suíte unitária do frontend executada: **31 testes passaram (100% de sucesso)**.
+   - Build de produção (`next build` / Turbopack) executado com sucesso e zero erros de tipagem TypeScript nas 11 rotas estáticas e dinâmicas geradas.
+4. **Finalização da Mudança**:
+   - Todas as tarefas de `openspec/changes/add-main-dashboard/tasks.md` foram concluídas (`[x]`).
+   - A change `add-main-dashboard` está completa e pronta para arquivamento ou para seguir com a execução de `prompt-02-add-encyclopedia-browse.md`.
