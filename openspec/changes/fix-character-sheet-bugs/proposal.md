@@ -2,7 +2,7 @@
 
 > **Change ID:** `fix-character-sheet-bugs`
 > **Status:** draft
-> **Author:** <!-- @handle or full name -->
+> **Author:** @aluno
 > **Created:** 2026-10-30
 > **Last Updated:** 2026-10-30
 
@@ -47,11 +47,40 @@ Este change corrige quatro bugs identificados no frontend da ficha de personagem
 **Bug 4 — Drag & drop lag:** O lag ocorre tipicamente por uso de `onDrag` em vez de `onDragOver`, ou por transforms CSS aplicados via `setState` (re-render lento). A solução é migrar para manipulação direta do DOM via `ref` durante o drag, ou adotar a biblioteca `@dnd-kit/core` que usa `pointer events` e `transform` sem re-render, eliminando o lag.
 
 ### Impacted Files
-<!-- Populated by sdd-code-explorer subagent. -->
+
 | File | Change Type | Notes |
 |------|-------------|-------|
-| `path/to/file` | Modify | <!-- brief note --> |
-| `path/to/new-file` | Create | <!-- brief note --> |
+| `dungeoneer-frontend/app/characters/new/page.tsx` | Modify | **Bug 1 & 4**: Desabilitar botão de rolagem de HP sem classe; corrigir lag no DnD removendo `transition-all` durante drag do `DraggableScoreChip` |
+| `dungeoneer-frontend/lib/srd-translations.ts` | Create | **Bug 2**: Mapeamentos de classes, linhagens, antecedentes, talentos e perícias para PT-BR com função `translateSrd()` |
+| `dungeoneer-frontend/lib/api/characters.ts` | Modify | **Bug 2 & 3**: Tipos e hooks de `CharacterNote` (`useCharacterNotes`, `useAddCharacterNote`); transformações PT-BR nas queries |
+| `dungeoneer-frontend/app/characters/page.tsx` | Modify | **Bug 2**: Renderização de nomes traduzidos nos cards de personagens |
+| `dungeoneer-frontend/app/characters/[id]/page.tsx` | Modify | **Bug 2 & 3**: Tradução da ficha; substituição de textarea único por `<AddNoteForm>` e lista de `<NoteCard>` |
+| `dungeoneer-frontend/app/characters/[id]/edit/page.tsx` | Modify | **Bug 2 & 3**: Remoção do campo único de notas; traduções PT-BR |
+| `dungeoneer-frontend/components/note-card.tsx` | Create | **Bug 3**: Componente para exibir nota individual (título, corpo, data formatada PT-BR) |
+| `dungeoneer-frontend/components/add-note-form.tsx` | Create | **Bug 3**: Formulário de adição de nota com validação e mutação React Query |
+| `dungeoneer-frontend/__tests__/wizard-ability-roll-guard.test.tsx` | Modify | **Bug 1**: Testes unitários para guard de rolagem de vida sem classe selecionada |
+| `dungeoneer-frontend/__tests__/character-sheet.test.tsx` | Modify | **Bug 3**: Atualização de testes para adição incremental de notas |
+| `dungeoneer-frontend/__tests__/character-list-and-edit.test.tsx` | Modify | **Bug 2 & 3**: Verificação de campos traduzidos e comportamento de edição |
+| `player-character-service/backend/src/main/resources/db/migration/V5__create_character_note_table.sql` | Create | **Bug 3**: Flyway migration criando `character_notes` e migrando dados legados de `notes` |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/CharacterNote.java` | Create | **Bug 3**: Entidade pura de domínio Clean Architecture com validação de invariantes |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/PlayerCharacter.java` | Modify | **Bug 3**: Deprecação de campo `notes` legado |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/port/out/CharacterNoteRepositoryPort.java` | Create | **Bug 3**: Port de saída do repositório de notas |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/port/in/AddCharacterNoteUseCase.java` | Create | **Bug 3**: Port de entrada para criação de notas |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/port/in/ListCharacterNotesUseCase.java` | Create | **Bug 3**: Port de entrada para listagem de notas |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/dto/AddCharacterNoteCommand.java` | Create | **Bug 3**: Command record da camada de aplicação |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/dto/CharacterNoteResult.java` | Create | **Bug 3**: Result record da camada de aplicação |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CharacterNoteService.java` | Create | **Bug 3**: Implementação dos use cases com validação de ownership e persistência |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/RollService.java` | Modify | **Bug 1**: Validação explícita de `archetypeId != null` em `rollHitPoints` com `CharacterValidationException` |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/CreateCharacterNoteRequest.java` | Create | **Bug 3**: REST DTO com `@NotBlank`, `@Size` para título e corpo |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/CharacterNoteResponse.java` | Create | **Bug 3**: REST response record |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/PlayerCharacterController.java` | Modify | **Bug 3**: Endpoints `POST /api/characters/{id}/notes` e `GET /api/characters/{id}/notes` |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/mapper/PlayerCharacterWebMapper.java` | Modify | **Bug 3**: Mapeadores para requisições, resultados e respostas de notas |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/CharacterNoteJpaEntity.java` | Create | **Bug 3**: Entidade JPA mapeada para `player_character.character_notes` |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/SpringDataCharacterNoteRepository.java` | Create | **Bug 3**: Interface Spring Data JPA |
+| `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/CharacterNotePersistenceAdapter.java` | Create | **Bug 3**: Adaptador de persistência para `CharacterNoteRepositoryPort` |
+| `player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/application/service/RollServiceTest.java` | Modify | **Bug 1**: Teste unitário rejeitando arquétipo nulo na rolagem de vida |
+| `player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/application/service/CharacterNoteServiceTest.java` | Create | **Bug 3**: Teste unitário para `AddCharacterNoteUseCase` e `ListCharacterNotesUseCase` |
+| `player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/PlayerCharacterControllerTest.java` | Modify | **Bug 1 & 3**: Testes de integração para endpoints de notas e validação de rolagem de HP sem classe |
 
 ### Data Model Changes (if applicable)
 
@@ -110,9 +139,9 @@ O campo `notes TEXT` na tabela `player_character` deve ser deprecado após migra
 | TE-04 | Drag & drop em dispositivo touch | E2E (Playwright) | Comportamento equivalente ao mouse |
 
 ### Test Commands
-- **Run frontend tests:** `cd dungeoneer-frontend && npm test`
-- **Run backend tests:** `cd player-character-service && mvn test`
-- **Coverage check:** `cd player-character-service && mvn verify` (JaCoCo ≥ 80%)
+- **Run frontend tests:** `cd dungeoneer-frontend && npm run test:unit`
+- **Run backend tests:** `cd player-character-service/backend && mvn test`
+- **Coverage check:** `cd player-character-service/backend && mvn verify` (JaCoCo ≥ 80%)
 - **E2E tests:** `cd dungeoneer-frontend && npx playwright test`
 
 ## Risks and Mitigations
@@ -128,11 +157,15 @@ O campo `notes TEXT` na tabela `player_character` deve ser deprecado após migra
 
 ### `specs/player-character-data-model-delta.md`
 - **Target Canonical Spec:** `openspec/specs/player-character-data-model.md`
-- **Summary of Updates:** Adição da tabela `character_note` e deprecação do campo `notes TEXT` em `player_character`.
+- **Summary of Updates:** Adição da tabela `character_notes`, índice em `character_id`, deprecação do campo `notes TEXT` em `player_character` e migration Flyway `V5`.
 
 ### `specs/frontend-web-app-delta.md`
 - **Target Canonical Spec:** `openspec/specs/frontend-web-app.md`
-- **Summary of Updates:** Novos componentes `NoteCard`, `AddNoteForm`, mapa de traduções SRD PT-BR, correção da biblioteca de drag & drop, e guard de rolagem de vida no wizard.
+- **Summary of Updates:** Novos componentes `NoteCard`, `AddNoteForm`, mapa de traduções SRD PT-BR em `srd-translations.ts`, correção do delay no drag & drop em `DraggableScoreChip`, e guard de rolagem de vida no wizard.
+
+### `specs/player-character-domain-delta.md`
+- **Target Canonical Spec:** `openspec/specs/player-character-domain.md`
+- **Summary of Updates:** Entidade de domínio `CharacterNote`, portas de entrada `AddCharacterNoteUseCase` e `ListCharacterNotesUseCase`, porta de saída `CharacterNoteRepositoryPort`, endpoints `POST /api/characters/{id}/notes` e `GET /api/characters/{id}/notes`, e validação estrita em `RollHitPointsUseCase` para arquétipo não-nulo.
 
 ## References
 

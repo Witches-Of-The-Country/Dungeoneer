@@ -56,9 +56,6 @@ A seção de notas exibe `<AddNoteForm>` no topo seguido de lista de `<NoteCard>
 
 ### 4. Correção de Drag & Drop
 
-A implementação atual deve ser avaliada e corrigida para:
-- Usar `pointer events` (`onPointerMove`) em vez de `onDrag` para rastrear posição
-- Aplicar `transform: translate()` diretamente via `ref.style` (sem re-render React)
-- **Alternativa recomendada:** Adotar `@dnd-kit/core` que resolve esses problemas nativamente
-
-Todos os pontos de drag & drop existentes na ficha devem ser cobertos por testes E2E após a correção.
+O `@dnd-kit/core` já está instalado e configurado no projeto. O atraso (lag) perceptível ocorre devido à classe CSS `transition-all` no componente `DraggableScoreChip` em `dungeoneer-frontend/app/characters/new/page.tsx:127`. Essa classe força o navegador a interpolar via animação CSS o `transform: translate3d(...)` a cada micro-movimento do ponteiro:
+- Remover a classe `transition-all` durante o estado ativo de arraste (`isDragging ? "" : "transition-all"`) ou utilizar o componente `<DragOverlay>` fornecido pelo `@dnd-kit/core` para desacoplar a renderização do elemento original e do clone arrastado.
+- Garantir resposta imediata (< 16ms) do cursor durante movimentos rápidos do mouse.
