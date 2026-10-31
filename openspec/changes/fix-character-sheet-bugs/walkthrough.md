@@ -1,7 +1,7 @@
 # Walkthrough: Correção dos Bugs da Ficha de Personagem
 
 > **Change ID:** `fix-character-sheet-bugs`
-> **Status:** Em Progresso (Fase 1 e Fase 2 Concluídas)
+> **Status:** Concluído (Fases 1, 2, 3 e 4 Concluídas)
 
 ---
 
@@ -95,4 +95,61 @@ git add player-character-service/backend/src/main/java/com/dungeoneer/playerChar
         player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/application/service/CharacterNoteServiceTest.java \
         player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/PlayerCharacterControllerTest.java
 git commit -m "feat(backend): add REST endpoints and use cases for incremental character notes"
+```
+
+---
+
+## Fase 3: Correção de Drag & Drop Lag e Guard de Rolagem de Vida (Frontend)
+
+### O que foi implementado:
+1. **Guard de Rolagem de HP no Wizard (`app/characters/new/page.tsx`)**:
+   - Botão `hp-roll-button` desabilitado quando `!selectedClassId`.
+   - Mensagem de aviso explicativa renderizada abaixo do botão: *"Selecione uma classe primeiro para determinar o dado de vida."*
+2. **Eliminação de Latência no Drag & Drop de Atributos (`DraggableScoreChip`)**:
+   - Remoção dinâmica da classe `transition-all` quando `isDragging` está ativo, garantindo acompanhamento em tempo real (< 16ms) do cursor do mouse sem arrasto retardado por transições CSS.
+3. **Commit da Fase 3**:
+   - Realizado no repositório `dungeoneer-frontend` com mensagem `fix(frontend): remove transition lag in DnD and guard HP rolling before class selection` (commit `d6cc597`).
+
+---
+
+## Fase 4: Traduções SRD PT-BR, Notas Incrementais e Suite de Testes
+
+### O que foi implementado:
+1. **Dicionário de Traduções SRD (`lib/srd-translations.ts`)**:
+   - Mapas completos cobrindo:
+     - 12 Classes SRD (Guerreiro, Mago, Ladino, Clérigo, Bárbaro, Bardo, Bruxo, Druida, Feiticeiro, Monge, Paladino, Patrulheiro).
+     - 9 Linhagens/Raças SRD (Anão, Elfo, Humano, Halfling, Draconato, Gnomo, Meio-Elfo, Meio-Orc, Tiferino).
+     - 10 Antecedentes SRD (Acólito, Artesão de Guilda, Charlatão, Criminoso, Eremita, Forasteiro, Herói do Povo, Marinheiro, Nobre, Sábio, Soldado).
+     - 18 Perícias SRD (Acrobacia, Atletismo, Percepção, Furtividade, etc.).
+     - Mais de 40 Magias e Talentos de Origem SRD 2024.
+   - Função utilitária `translateReferenceName(name)` com fallback seguro para texto original quando sem tradução cadastrada.
+2. **Integração nas Camadas de API e Consulta (`lib/api/characters.ts`)**:
+   - Tradução transparente de respostas das queries de classes, linhagens, antecedentes e fichas de personagens.
+   - Definição dos tipos `CharacterNote` e `CreateCharacterNotePayload`.
+   - Hooks TanStack Query `useCharacterNotes(characterId)` e `useAddCharacterNote(characterId)`.
+3. **Componentes de UI de Notas Incrementais**:
+   - `components/note-card.tsx`: Card temático Dark Fantasy exibindo título da nota, data formatada em PT-BR (`pt-BR`) e corpo com formatação preservada.
+   - `components/add-note-form.tsx`: Formulário com validação Zod (título obrigatório até 255 chars, corpo obrigatório até 10.000 chars) e mutação automática com feedback Sonner.
+4. **Refatoração da Ficha de Personagem e Página de Edição**:
+   - `app/characters/[id]/page.tsx`: Aba "Notas" atualizada com formulário `<AddNoteForm>` e listagem cronológica `<NoteCard>`, com estados de loading e lista vazia.
+   - `app/characters/[id]/edit/page.tsx`: Remoção do campo monolítico de notas legado.
+5. **Cobertura de Testes Automatizados**:
+   - `__tests__/wizard-ability-roll-guard.test.tsx`: Validação do botão desabilitado sem classe e habilitado após seleção de classe.
+   - `__tests__/character-sheet.test.tsx`: Teste da aba "Notas" incremental com adição e renderização via mocks da API.
+   - `__tests__/character-list-and-edit.test.tsx`: Verificação da listagem e formulário de edição atualizado.
+   - `__tests__/incremental-notes-and-translations.test.tsx`: Suite dedicada para `translateReferenceName`, `NoteCard` e validação de schema do `AddNoteForm`.
+
+### Resultados Finais de Verificação:
+```bash
+# Frontend Unit Tests (Vitest)
+Test Files  7 passed (7)
+Tests       15 passed (15)
+
+# Frontend Production Build (Next.js Turbopack)
+✓ Compiled successfully in 49s
+✓ Generating static pages (9/9) in 2.2s
+
+# Backend Unit & Integration Tests (Maven Surefire + Testcontainers)
+Tests run: 146, Failures: 0, Errors: 0, Skipped: 1
+BUILD SUCCESS
 ```
