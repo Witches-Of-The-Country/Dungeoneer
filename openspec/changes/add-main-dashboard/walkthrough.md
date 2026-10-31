@@ -36,3 +36,19 @@ Nesta fase:
 3. **Testes Unitários (TDD)**:
    - Criado `__tests__/use-auth-roles.test.ts` cobrindo cenários TP-01, TP-02, TP-01b, TE-01 e TE-01b. Todos os 5 testes passaram com 100% de sucesso.
    - Suíte de 22 testes unitários do frontend executada com sucesso.
+
+
+---
+
+## Fase 3: Componente `EncyclopediaMenu` e Gating de Categorias por Papel
+
+Nesta fase:
+1. **Criação do Componente `EncyclopediaMenu` (`components/encyclopedia-menu.tsx`)**:
+   - Desenvolvido seguindo os design tokens Dark Fantasy RPG (fundo `bg-zinc-900/60`, bordas sutis `border-zinc-800`, transição para hover `border-amber-500/40`, ícones Lucide).
+   - Apresenta as 5 categorias públicas do compêndio: Arquétipos, Magias, Talentos, Itens e Linhagens.
+   - Aplica controle de acesso condicional via `useAuth().isDM` para as categorias Monstros e NPCs.
+   - Exibe a insígnia dourada "Mestre" com ícone `Crown` nos cards exclusivos de DM.
+2. **Testes Unitários (TDD)**:
+   - Criado `__tests__/encyclopedia-menu.test.tsx` cobrindo cenários TP-03, TP-04 e TE-02.
+   - Validados a omissão de categorias restritas para jogadores comuns, a inclusão completa com badges para DMs e os destinos de rota de cada link.
+   - 3 testes executados com 100% de aprovação.
