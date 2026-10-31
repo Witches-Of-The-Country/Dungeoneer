@@ -101,3 +101,21 @@ Nesta fase:
    - *Cloak of Protection* (2024) -> **Manto de Proteção** (Item Maravilhoso Incomum, +1 CA e Salvaguardas)
 4. **Verificação Automatizada**:
    - Migração V10 testada e executada com sucesso via Testcontainers no PostgreSQL.
+
+
+---
+
+## Fase 3: Modelos de Domínio e Adaptadores de Persistência (Clean Architecture)
+
+Nesta fase:
+1. **Entidade de Domínio Pura (`domain/model/Item.java`)**:
+   - Zero anotações de framework (sem Spring, JPA ou Lombok).
+   - Validações invariantes no construtor para `id`, `ruleset`, `slug`, `name`, `itemCategory` e `itemType`.
+   - Testada exaustivamente em `ItemTest.java` com 100% de sucesso.
+2. **Entidades JPA & Repositórios Spring Data**:
+   - Criadas `SpellJpaEntity`, `FeatJpaEntity` e `ItemJpaEntity`.
+   - Criados repositórios `SpringDataSpellRepository`, `SpringDataFeatRepository` e `SpringDataItemRepository`.
+   - Atualizados `SpringDataArchetypeRepository` e `SpringDataLineageRepository` com queries nativas de cursor composto `(name ASC, id ASC)` e Full-Text Search PostgreSQL (`plainto_tsquery('portuguese', :q)`).
+3. **Porta e Adaptador de Persistência**:
+   - Porta `ReferenceDataRepository` e adaptador `ReferenceDataPersistenceAdapter` estendidos para atender consultas paginadas e FTS.
+   - Testes de integração validados com sucesso no PostgreSQL via Testcontainers.
