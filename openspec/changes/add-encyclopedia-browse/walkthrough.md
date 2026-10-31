@@ -77,3 +77,27 @@ Nesta fase:
    - *War Caster* (2024) -> **Conjurador de Batalha** (Pré-requisito: Nível 4+)
 4. **Verificação Automatizada**:
    - Migração V9 testada e executada com sucesso via Testcontainers no PostgreSQL.
+
+
+---
+
+## Fase 2.3: Seed de Itens e Equipamentos SRD Traduzidos (Flyway V10)
+
+Nesta fase:
+1. **Dados de Origem em JSON**:
+   - `player-character-service/backend/src/main/resources/db/seed/items_srd_2014.json`
+   - `player-character-service/backend/src/main/resources/db/seed/items_srd_2024.json`
+   - Campos armazenados: `ruleset`, `slug`, `name_en`, `name`, `item_category`, `item_type`, `rarity`, `attunement`, `cost`, `weight`, `description`.
+2. **Migração Flyway V10**:
+   - `V10__seed_srd_items.sql` implementado com inserções idempotentes via `ON CONFLICT (ruleset, slug) DO NOTHING`.
+3. **Amostra de Tradução para Revisão**:
+   - *Longsword* (2014) -> **Espada Longa** (Arma Marcial Corpo a Corpo, dano 1d8/1d10 versátil)
+   - *Chain Mail* (2014) -> **Cota de Malha** (Armadura Pesada, CA 16)
+   - *Potion of Healing* (2014) -> **Poção de Cura** (Poção Mágica Comum, cura 2d4+2)
+   - *Boots of Elvenkind* (2014) -> **Botas Élficas** (Item Maravilhoso Incomum, passos silenciosos)
+   - *Longsword* (2024) -> **Espada Longa** (Arma Marcial Corpo a Corpo com maestria Sap/Abalar)
+   - *Plate Armor* (2024) -> **Armadura de Placas** (Armadura Pesada, CA 18)
+   - *Potion of Healing* (2024) -> **Poção de Cura** (Regras 2024 com consumo como Ação Bônus)
+   - *Cloak of Protection* (2024) -> **Manto de Proteção** (Item Maravilhoso Incomum, +1 CA e Salvaguardas)
+4. **Verificação Automatizada**:
+   - Migração V10 testada e executada com sucesso via Testcontainers no PostgreSQL.
