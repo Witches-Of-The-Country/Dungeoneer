@@ -26,27 +26,27 @@
 - [x] 4.4 Update character cards in `app/characters/page.tsx` to display subclass and multiclass progression breakdown.
 
 ## Phase 5: Frontend Encyclopedia Detail Modals & Homebrew Edit
-- [ ] 5.1 Implement `SpellDetailModal.tsx` for spell school, casting time, range, components, duration, damage rolls, and upcast descriptions.
-- [ ] 5.2 Implement `FeatDetailModal.tsx` for prerequisites, stat bonuses, and mechanical effects.
-- [ ] 5.3 Implement `ItemDetailModal.tsx` for type, rarity, weight, cost, attunement, and item mechanics.
-- [ ] 5.4 Implement `LineageDetailModal.tsx` for traits, speed, size, and racial abilities.
-- [ ] 5.5 Connect click handlers on `ReferenceCard` across Spells, Feats, Items, and Lineages pages.
-- [ ] 5.6 Add "Editar" button in modals when `ruleset === 'HOMEBREW'`, wiring it to edit dialog and `PUT` API.
+- [x] 5.1 Implement `SpellDetailModal.tsx` for spell school, casting time, range, components, duration, damage rolls, and upcast descriptions.
+- [x] 5.2 Implement `FeatDetailModal.tsx` for prerequisites, stat bonuses, and mechanical effects.
+- [x] 5.3 Implement `ItemDetailModal.tsx` for type, rarity, weight, cost, attunement, and item mechanics.
+- [x] 5.4 Implement `LineageDetailModal.tsx` for traits, speed, size, and racial abilities.
+- [x] 5.5 Connect click handlers on `ReferenceCard` across Spells, Feats, Items, and Lineages pages.
+- [x] 5.6 Add "Editar" button in modals when `ruleset === 'HOMEBREW'`, wiring it to edit dialog and `PUT` API.
 
 ## Phase 6: Frontend Inventory Item Catalog & Shopping Cart Modal
-- [ ] 6.1 Create `item-catalog-modal.tsx` with search, category filtering (Armas, Armaduras, Consumíveis, etc.), and rarity filter.
-- [ ] 6.2 Add "Adicionar Direto" (free add with quantity selector).
-- [ ] 6.3 Add "Loja / Carrinho" mode displaying unit and total price, comparing against character's current coin pouch, and checking out with `purchaseWithCurrency: true`.
-- [ ] 6.4 Replace the old dropdown in `inventory-tab.tsx` with the new catalog modal trigger.
+- [x] 6.1 Create `item-catalog-modal.tsx` with search, category filtering (Armas, Armaduras, Consumíveis, etc.), and rarity filter.
+- [x] 6.2 Add "Adicionar Direto" (free add with quantity selector).
+- [x] 6.3 Add "Loja / Carrinho" mode displaying unit and total price, comparing against character's current coin pouch, and checking out with `purchaseWithCurrency: true`.
+- [x] 6.4 Replace the old dropdown in `inventory-tab.tsx` with the new catalog modal trigger.
 
 ## Phase 7: Verification & Build
-- [ ] 7.1 Run frontend unit tests (`npm run test:unit`).
-- [ ] 7.2 Run frontend production build (`npm run build`).
-- [ ] 7.3 Run backend tests (`mvn test`).
+- [x] 7.1 Run frontend unit tests (`npm run test:unit`).
+- [x] 7.2 Run frontend production build (`npm run build`).
+- [x] 7.3 Run backend tests (`mvn test`).
 
 ## Review Gate
-- [ ] All 7 acceptance criteria verified via tests and visual checks.
-- [ ] Backend line coverage >= 80% on modified domain and application services.
-- [ ] Frontend builds without TypeScript or ESLint errors.
-- [ ] No regression on existing character creation, level up, or dice roll flows.
-- [ ] Conventional commit prepared for user approval.
+- [x] All 7 acceptance criteria verified via tests and visual checks.
+- [x] Backend line coverage >= 80% on modified domain and application services.
+- [x] Frontend builds without TypeScript or ESLint errors.
+- [x] No regression on existing character creation, level up, or dice roll flows.
+- [x] Conventional commit prepared for user approval.

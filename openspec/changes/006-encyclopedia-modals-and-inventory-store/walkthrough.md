@@ -76,5 +76,50 @@ npm --prefix dungeoneer-frontend run test:unit
 
 ---
 
-## Handoff para a Fase 5:
-- **Próxima etapa**: Fase 5 — Criação dos modais de detalhes da Enciclopédia (`SpellDetailModal`, `ItemDetailModal`, `LineageDetailModal`) e integração nos cards de referência das páginas da enciclopédia com o botão "Editar" para Homebrews.
+## Fase 5: Modais de Detalhes da Enciclopédia & Edição Homebrew (Concluída)
+
+### Arquivos Modificados / Criados:
+- [`SpellDetailModal.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/encyclopedia/spell-detail-modal.tsx): Criado modal com círculo, escola, tempo de conjuração, alcance/área, componentes, duração, descrição, mecânicas de dano e botão de edição para magias Homebrew.
+- [`ItemDetailModal.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/encyclopedia/item-detail-modal.tsx): Criado modal com categoria, tipo, raridade, custo, peso, sintonia, propriedades mecânicas (dados de dano, versátil, CA, bônus mágicos) e botão de edição para itens Homebrew.
+- [`LineageDetailModal.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/encyclopedia/lineage-detail-modal.tsx): Criado modal com deslocamento base, tamanho, traços raciais, descrição e botão de edição para linhagens Homebrew.
+- [`ClassDetailModal.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/encyclopedia/class-detail-modal.tsx): Adicionado suporte ao botão "Editar" quando a classe pertencer ao ruleset `HOMEBREW`.
+- [`homebrew.ts`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/lib/api/homebrew.ts): Adicionadas funções e hooks de mutação `useUpdateHomebrewSpell`, `useUpdateHomebrewFeat`, `useUpdateHomebrewItem`, `useUpdateHomebrewClass`, `useUpdateHomebrewSubclass`, `useUpdateHomebrewLineage`.
+- [`create-homebrew-dialog.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/homebrew/create-homebrew-dialog.tsx): Adicionado prop `editEntity`, preenchimento automático de todos os campos com os valores atuais da entidade, chamadas automáticas para as mutações `update*` e título dinâmico "Editar [Categoria] Homebrew".
+- Páginas da Enciclopédia ([`spells/page.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/app/encyclopedia/spells/page.tsx), [`items/page.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/app/encyclopedia/items/page.tsx), [`feats/page.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/app/encyclopedia/feats/page.tsx), [`lineages/page.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/app/encyclopedia/lineages/page.tsx), [`classes/page.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/app/encyclopedia/classes/page.tsx)): Conectados todos os cards para abrir seus respectivos modais no clique e disparar a edição quando selecionado "Editar" em itens Homebrew.
+
+### Validação dos Testes:
+```bash
+npm --prefix dungeoneer-frontend run test:unit
+# Resultado: 18 test files passed (64 tests passed)
+```
+
+---
+
+## Fase 6: Catálogo de Itens & Loja no Inventário (Concluída)
+
+### Arquivos Modificados / Criados:
+- [`item-catalog-modal.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/character-sheet/item-catalog-modal.tsx): Criado modal moderno de catálogo dividido em visualização split-screen:
+  - Cabeçalho com indicador em tempo real das moedas atuais do personagem (PO, PP, PC).
+  - Barra de busca instantânea e abas de filtros por categoria (`Armas`, `Armaduras`, `Poções`, `Maravilhosos`, `Equipamento`).
+  - Painel esquerdo com lista de itens carregados do compêndio, incluindo badges de raridade, tipo e sintonia.
+  - Painel direito de checkout com alternância entre:
+    - **Adicionar Direto**: para o mestre ou saque livre, sem deduzir moedas (`purchaseWithCurrency: false`).
+    - **Comprar na Loja**: calcula o custo total em tempo real com base na quantidade, compara com o saldo em cobre total do personagem e bloqueia a compra caso não haja moedas suficientes (`purchaseWithCurrency: true`).
+- [`inventory-tab.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/character-sheet/inventory-tab.tsx): O antigo dropdown `<select>` foi substituído pelo botão de ação "Adicionar / Comprar Itens", acionando o `ItemCatalogModal`.
+- [`item-catalog-modal.test.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/__tests__/item-catalog-modal.test.tsx): Criada suite de testes unitários cobrindo renderização com saldo, modo direto e modo de compra na loja com verificação de saldo.
+
+### Validação dos Testes:
+```bash
+npm --prefix dungeoneer-frontend run test:unit
+# Resultado: 19 test files passed (67 tests passed)
+```
+
+---
+
+## Fase 7: Validação Completa & Review Gate (Concluída)
+
+- **Frontend Unit Tests**: 19 suites de testes, 67 testes passando (`npm run test:unit`).
+- **Frontend Production Build**: `npm run build` gerou com sucesso todas as 17 rotas estáticas/dinâmicas sem erros de tipagem TypeScript ou Turbopack.
+- **Backend Unit & Integration Tests**: 219 testes executados com sucesso (`mvn test`).
+- **Contratos de Arquitetura**: Regras de Clean Architecture e barreira de segurança estrita mantidas. Mutações em referências do SRD bloqueadas com `CharacterValidationException` (HTTP 422).
+
