@@ -9,11 +9,11 @@
 - [x] 1.6 Add unit tests in `CharacterQueryServiceTest` verifying hydrated feats, items, and multiclass summary.
 
 ## Phase 2: Backend Homebrew Update Endpoints & Security Checks
-- [ ] 2.1 Add `updateSpell`, `updateFeat`, `updateItem`, `updateArchetype`, `updateLineage`, and `updateSubclass` to `CreateHomebrewUseCase` and `HomebrewService`.
-- [ ] 2.2 Enforce security rule: verify `entity.getRuleset() == Ruleset.HOMEBREW` and throw `CharacterValidationException` if an attempt is made to mutate non-homebrew rulesets.
-- [ ] 2.3 Add `PUT /api/reference/{category}/{id}` endpoints to `ReferenceDataController` with `@Valid` DTO parameters.
-- [ ] 2.4 Add unit and web tests in `ReferenceDataControllerTest` and `HomebrewServiceTest` testing both successful homebrew updates and rejected SRD modification attempts.
-- [ ] 2.5 Run backend unit tests (`mvn test`) and restart backend container.
+- [x] 2.1 Add `updateSpell`, `updateFeat`, `updateItem`, `updateArchetype`, `updateLineage`, and `updateSubclass` to `CreateHomebrewUseCase` and `HomebrewService`.
+- [x] 2.2 Enforce security rule: verify `entity.getRuleset() == Ruleset.HOMEBREW` and throw `CharacterValidationException` if an attempt is made to mutate non-homebrew rulesets.
+- [x] 2.3 Add `PUT /api/reference/{category}/{id}` endpoints to `ReferenceDataController` with `@Valid` DTO parameters.
+- [x] 2.4 Add unit and web tests in `ReferenceDataControllerTest` and `HomebrewServiceTest` testing both successful homebrew updates and rejected SRD modification attempts.
+- [x] 2.5 Run backend unit tests (`mvn test`) and restart backend container.
 
 ## Phase 3: Frontend Homebrew Currency Input Sizing Fix
 - [ ] 3.1 Refactor currency cost inputs in `create-homebrew-dialog.tsx` into a dedicated responsive row with hidden webkit spinners (`[appearance:textfield]`) and ample column width.

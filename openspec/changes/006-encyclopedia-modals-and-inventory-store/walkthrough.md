@@ -22,5 +22,26 @@ mvn -f player-character-service/backend/pom.xml test -Dtest="PlayerCharacterTest
 
 ---
 
-## Handoff para a Fase 2:
-- **Próxima etapa**: Fase 2 — Implementar endpoints de atualização de Homebrew (`PUT /api/reference/{category}/{id}`) com validação estrita de segurança (`ruleset == HOMEBREW`).
+## Fase 2: Endpoints de Atualização de Homebrew & Checagens de Segurança (Concluída)
+
+### Arquivos Modificados:
+- [`CreateHomebrewUseCase.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/port/in/CreateHomebrewUseCase.java): Declarados métodos de atualização para magias, talentos, itens, arquétipos, linhagens e subclasses.
+- [`HomebrewService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/HomebrewService.java): Implementados os 6 métodos de atualização com barreira de segurança estrita: mutações são permitidas exclusivamente quando `ruleset == Ruleset.HOMEBREW`. Tentativas de editar conteúdo SRD lançam `CharacterValidationException`.
+- [`ReferenceDataRepository.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/port/out/ReferenceDataRepository.java) & [`ReferenceDataPersistenceAdapter.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/ReferenceDataPersistenceAdapter.java): Adicionado `findSpellById(UUID id)`.
+- [`SpellJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/SpellJpaEntity.java): Implementado método de conversão `toDomain()`.
+- [`ReferenceDataController.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/ReferenceDataController.java): Expostos endpoints `PUT /api/reference/{spells,feats,items,classes,lineages,subclasses}/{id}` com validação `@Valid`.
+- [`HomebrewServiceTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/application/service/HomebrewServiceTest.java): Testes cobrindo atualizações de sucesso e rejeição defensiva de itens/magias SRD.
+- [`ReferenceDataControllerTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/ReferenceDataControllerTest.java): Testes de integração WebMvc para `PUT /api/reference/items/{id}` (200 OK e 422 na tentativa de mutação de SRD).
+
+### Validação dos Testes & Container:
+```bash
+mvn -f player-character-service/backend/pom.xml test -Dtest="HomebrewServiceTest,ReferenceDataControllerTest"
+# Resultado: Tests run: 24, Failures: 0, Errors: 0, Skipped: 0 (BUILD SUCCESS)
+docker --context default compose up -d --build player-character-service
+# Resultado: Container recriado e online em 11s.
+```
+
+---
+
+## Handoff para a Fase 3:
+- **Próxima etapa**: Fase 3 — Correção de layout e tamanho dos inputs de moedas no modal de criação de Homebrew (`create-homebrew-dialog.tsx`).
