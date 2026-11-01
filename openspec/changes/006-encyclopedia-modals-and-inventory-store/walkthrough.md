@@ -43,5 +43,21 @@ docker --context default compose up -d --build player-character-service
 
 ---
 
-## Handoff para a Fase 3:
-- **Próxima etapa**: Fase 3 — Correção de layout e tamanho dos inputs de moedas no modal de criação de Homebrew (`create-homebrew-dialog.tsx`).
+## Fase 3: Correção de Layout e Tamanho dos Inputs de Moedas (Concluída)
+
+### Arquivos Modificados:
+- [`create-homebrew-dialog.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/homebrew/create-homebrew-dialog.tsx):
+  - `Raridade` e `Peso` foram isolados em um grid de 2 colunas.
+  - `Custo (Moedas)` ganhou uma linha exclusiva com fundo destacado, 5 colunas responsivas, largura confortável por moeda e classes utilitárias `[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none` para remover botões de spinner do browser que bloqueavam a digitação.
+  - O valor zero inicial foi ajustado para placeholder visual `0`, permitindo digitação direta de valores com múltiplos dígitos (como `50` ou `1000`) sem cortes ou sobreposição.
+
+### Validação dos Testes:
+```bash
+npm --prefix dungeoneer-frontend run test:unit
+# Resultado: 18 test files passed (61 tests passed)
+```
+
+---
+
+## Handoff para a Fase 4:
+- **Próxima etapa**: Fase 4 — Exibição de talentos hidratados na ficha com badge de origem, modal de detalhes ao clicar no card, confirmação de retenção de moedas no inventário e exibição de subclasse/multiclasse no card de personagem.

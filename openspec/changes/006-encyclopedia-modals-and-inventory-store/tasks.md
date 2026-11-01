@@ -16,8 +16,8 @@
 - [x] 2.5 Run backend unit tests (`mvn test`) and restart backend container.
 
 ## Phase 3: Frontend Homebrew Currency Input Sizing Fix
-- [ ] 3.1 Refactor currency cost inputs in `create-homebrew-dialog.tsx` into a dedicated responsive row with hidden webkit spinners (`[appearance:textfield]`) and ample column width.
-- [ ] 3.2 Verify multi-digit values (e.g. 50 PO) render without truncation or clipping.
+- [x] 3.1 Refactor currency cost inputs in `create-homebrew-dialog.tsx` into a dedicated responsive row with hidden webkit spinners (`[appearance:textfield]`) and ample column width.
+- [x] 3.2 Verify multi-digit values (e.g. 50 PO) render without truncation or clipping.
 
 ## Phase 4: Frontend Character Sheet Feats Tab & Modals
 - [ ] 4.1 Update `feats-tab.tsx` to display hydrated feat name, origin badge (Lineage, Archetype/Class, Background, Custom), and full mechanics summary.
