@@ -20,10 +20,10 @@
 - [x] 3.2 Verify multi-digit values (e.g. 50 PO) render without truncation or clipping.
 
 ## Phase 4: Frontend Character Sheet Feats Tab & Modals
-- [ ] 4.1 Update `feats-tab.tsx` to display hydrated feat name, origin badge (Lineage, Archetype/Class, Background, Custom), and full mechanics summary.
-- [ ] 4.2 Add click interaction on feat cards opening a `FeatDetailModal`.
-- [ ] 4.3 Verify currency update in `currency-pouch-card.tsx` stays saved after update without resetting to 0.
-- [ ] 4.4 Update character cards in `app/characters/page.tsx` to display subclass and multiclass progression breakdown.
+- [x] 4.1 Update `feats-tab.tsx` to display hydrated feat name, origin badge (Lineage, Archetype/Class, Background, Custom), and full mechanics summary.
+- [x] 4.2 Add click interaction on feat cards opening a `FeatDetailModal`.
+- [x] 4.3 Verify currency update in `currency-pouch-card.tsx` stays saved after update without resetting to 0.
+- [x] 4.4 Update character cards in `app/characters/page.tsx` to display subclass and multiclass progression breakdown.
 
 ## Phase 5: Frontend Encyclopedia Detail Modals & Homebrew Edit
 - [ ] 5.1 Implement `SpellDetailModal.tsx` for spell school, casting time, range, components, duration, damage rolls, and upcast descriptions.

@@ -59,5 +59,22 @@ npm --prefix dungeoneer-frontend run test:unit
 
 ---
 
-## Handoff para a Fase 4:
-- **Próxima etapa**: Fase 4 — Exibição de talentos hidratados na ficha com badge de origem, modal de detalhes ao clicar no card, confirmação de retenção de moedas no inventário e exibição de subclasse/multiclasse no card de personagem.
+## Fase 4: Ficha de Talentos, Modais e Card Multiclasse (Concluída)
+
+### Arquivos Modificados / Criados:
+- [`characters.ts`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/lib/api/characters.ts): Adicionado `CharacterClassSummary` e campos `subclassName` e `classes` ao `CharacterSummary`.
+- [`page.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/app/characters/page.tsx): Atualizado o card de personagens para renderizar a classe principal com sua subclasse e todas as multiclasses secundárias com seus níveis (ex: `Nível 7 • Guerreiro (Mestre da Batalha) 5 / Mago 2 • Humano`).
+- [`feat-detail-modal.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/encyclopedia/feat-detail-modal.tsx): Criado modal completo de detalhes de talentos com exibição de lore, badges de origem (Classe, Subclasse, Linhagem, Origem, Geral, Homebrew), pré-requisitos, mecânicas ativas (bônus de atributos, CA, ações e cargas) e suporte ao botão "Editar" para itens Homebrew.
+- [`feats-tab.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/character-sheet/feats-tab.tsx): Integrado `FeatDetailModal` ao clicar em qualquer card de talento, com badges de origem e indicação visual.
+- [`currency-pouch-card.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/character-sheet/currency-pouch-card.tsx): Ajustados inputs do modo de edição de moedas para ocultar setas de incremento do navegador e evitar o zero preso à esquerda.
+
+### Validação dos Testes:
+```bash
+npm --prefix dungeoneer-frontend run test:unit
+# Resultado: 18 test files passed (61 tests passed)
+```
+
+---
+
+## Handoff para a Fase 5:
+- **Próxima etapa**: Fase 5 — Criação dos modais de detalhes da Enciclopédia (`SpellDetailModal`, `ItemDetailModal`, `LineageDetailModal`) e integração nos cards de referência das páginas da enciclopédia com o botão "Editar" para Homebrews.
