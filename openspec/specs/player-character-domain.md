@@ -1,7 +1,7 @@
 ---
 id: "player-character-domain"
 title: "Player Character Domain & API — Living Specification"
-version: "1.1.0"
+version: "1.2.0"
 status: "active"
 owners:
   - "@jaca"
@@ -68,8 +68,8 @@ flowchart LR
     DM --> UC7
 ```
 
-- **[RF-01] Create & Manage Character (`UC1`)**: Define base `AbilityScores` (via `STANDARD_ARRAY`, `POINT_BUY` 27-point budget, or server-validated `ROLLED` 4d6-drop-lowest), select `Lineage` and `Background` (applying Dual Ruleset ASI via `RulesEngine`), calculate initial level (1–20) HP (`MAX`, `AVERAGE`, `ROLLED`), and initialize `ClassProgression`. Endpoints enforce strict tenant isolation scoped by `X-User-Id`.
-  - *Implementation Status*: Implemented and verified (`POST /api/characters`, `GET /api/characters`, `GET /api/characters/{id}`, `PUT /api/characters/{id}`, `DELETE /api/characters/{id}`, `POST /api/characters/ability-rolls`, `POST /api/characters/hp-rolls`).
+- **[RF-01] Create & Manage Character (`UC1`)**: Define base `AbilityScores` (via `STANDARD_ARRAY`, `POINT_BUY` 27-point budget, or server-validated `ROLLED` 4d6-drop-lowest), select `Lineage` and `Background` (applying Dual Ruleset ASI via `RulesEngine`), calculate initial level (1–20) HP (`MAX`, `AVERAGE`, `ROLLED` supporting multiclass dice calculations), select class and background `skillProficiencies`, and initialize single or multiclass `ClassProgression`s. Endpoints enforce strict tenant isolation scoped by `X-User-Id`.
+  - *Implementation Status*: Implemented and verified (`POST /api/characters`, `GET /api/characters`, `GET /api/characters/{id}`, `PUT /api/characters/{id}`, `DELETE /api/characters/{id}`, `POST /api/characters/ability-rolls`, `POST /api/characters/hp-rolls`, `POST /api/characters/{id}/notes`, `PUT /api/characters/{id}/notes/{noteId}`, `DELETE /api/characters/{id}/notes/{noteId}`).
 - **[RF-02] Level Up & Multiclass (`UC2`)**: Increment levels on an existing `ClassProgression` or add a new `ClassProgression` (validating multiclass ability score prerequisites), select a `Subclass` at the archetype's subclass threshold level, and recalculate proficiency bonus, HP, and `SpellcastingStrategy` slots.
 - **[RF-03] Spell Management & Search (`UC3`)**: Query available spells filtered by class, level, school, and name; learn/prepare spells on a character; and track daily spell slot consumption and recovery.
 - **[RF-04] Action & Dice Roll Resolution (`UC4`)**: Instantiate and resolve `CheckRoll` (attacks, skill checks, saving throws with advantage/disadvantage/proficiency), `DamageRoll`, and `HealRoll` based on the actor's `AbilityScores`.
@@ -331,14 +331,23 @@ All `/api/characters/**` endpoints require the `X-User-Id` header (`UUID`) and e
 | Method | Path | Description |
 |--------|------|-------------|
 | `POST` | `/api/characters/ability-rolls` | Generate or retrieve idempotent `4d6kh3` ability roll token for `X-User-Id` |
-| `POST` | `/api/characters/hp-rolls` | Generate or retrieve idempotent Hit Die rolls for level > 1 (`{ archetypeId, level }`) |
-| `POST` | `/api/characters` | Create a new character with server-side ASI, HP calculation, and roll token consumption |
+| `POST` | `/api/characters/hp-rolls` | Generate or retrieve idempotent Hit Die rolls for level >= 1 (`{ archetypeId, level, isSecondaryClass }`) |
+| `POST` | `/api/characters` | Create a new character with server-side ASI, multiclass HP calculation, roll token consumption, and skill proficiencies |
 | `GET` | `/api/characters` | List all character summaries owned by `X-User-Id` ordered by `updated_at DESC` |
 | `GET` | `/api/characters/{id}` | Get full hydrated character sheet by ID (returns 404 if not owned) |
 | `PUT` | `/api/characters/{id}` | Update mutable sheet fields (`name`, `hitPointsCurrent`, `hitPointsTemp`, `notes`) |
 | `DELETE` | `/api/characters/{id}` | Delete character owned by `X-User-Id` (`204 No Content`) |
 | `POST` | `/api/characters/{id}/level-up` | Level up a character (deferred) |
 | `POST` | `/api/characters/{id}/multiclass` | Add a new class to a character (deferred) |
+
+### Character Notes Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/characters/{id}/notes` | List all notes for a character owned by `X-User-Id` |
+| `POST` | `/api/characters/{id}/notes` | Create a new character note (`{ title, body }`) |
+| `PUT` | `/api/characters/{id}/notes/{noteId}` | Update an existing character note (`{ title, body }`) |
+| `DELETE` | `/api/characters/{id}/notes/{noteId}` | Delete a character note (`204 No Content`) |
 
 ### Spell Search Endpoints
 
@@ -407,5 +416,6 @@ Example `ProblemDetail` payload:
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.2.0 | 2026-10-31 | @jaca | Added Character Notes CRUD (`PUT /api/characters/{id}/notes/{noteId}`), multiclass Hit Die rolling and validation (`isSecondaryClass`), and skill proficiencies (`refactor-wizard-hp-srd-and-session`) |
 | 1.1.0 | 2026-10-30 | @jaca | Implemented character CRUD, single-chance server-side rolls, Dual Ruleset ASI, server-side HP, and X-User-Id scoping (`character-crud-backend`) |
 | 1.0.0 | 2026-10-29 | @jaca | Migrated from `README.md`, `docs/USE-CASES.md`, `docs/spec/SPEC.md`, `docs/STATE.md`, and `docs/spec/res/api-contracts.md` |

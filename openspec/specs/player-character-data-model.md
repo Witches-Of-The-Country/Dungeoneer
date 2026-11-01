@@ -1,7 +1,7 @@
 ---
 id: "player-character-data-model"
 title: "Player Character Data Model & Persistence — Living Specification"
-version: "1.2.0"
+version: "1.3.0"
 status: "active"
 owners:
   - "@jaca"
@@ -52,6 +52,7 @@ erDiagram
     characters ||--o{ character_items : "owns"
     characters ||--o{ character_feats : "has"
     characters ||--o{ character_conditions : "suffers"
+    characters ||--o{ character_notes : "has"
 
     hp_rolls }o--|| archetypes : "references"
 
@@ -86,6 +87,7 @@ erDiagram
         varchar hp_calculation_method
         boolean has_pending_level_choices
         text notes
+        varchar[] skill_proficiencies
         uuid lineage_id FK
         uuid background_id FK
         uuid user_id FK "NOT NULL"
@@ -259,6 +261,15 @@ erDiagram
         varchar condition_name
         boolean is_active
     }
+
+    character_notes {
+        uuid id PK
+        uuid character_id FK
+        varchar title
+        text body
+        timestamptz created_at
+        timestamptz updated_at
+    }
 ```
 
 ---
@@ -286,6 +297,7 @@ erDiagram
 | `hp_calculation_method` | `VARCHAR(15)` | NOT NULL, DEFAULT 'MAX' | MAX, AVERAGE, ROLLED |
 | `has_pending_level_choices` | `BOOLEAN` | NOT NULL, DEFAULT FALSE | Flag set when created at level > 1, deferred until interactive level-up wizards |
 | `notes` | `TEXT` | NOT NULL, DEFAULT '' | Player notes and campaign annotations |
+| `skill_proficiencies` | `VARCHAR[]` | NOT NULL, DEFAULT '{}' | Combined class and background skill proficiencies |
 | `lineage_id` | `UUID` | FK → lineages.id, NOT NULL | |
 | `background_id` | `UUID` | FK → backgrounds.id, NOT NULL | |
 | `user_id` | `UUID` | NOT NULL | Logical reference to auth-service users.id (enforced for tenant isolation) |
@@ -390,6 +402,20 @@ erDiagram
 | `condition_name` | `VARCHAR(50)` | NOT NULL |
 | `is_active` | `BOOLEAN` | NOT NULL, DEFAULT true |
 | PK | | (`character_id`, `condition_name`) |
+
+#### `character_notes`
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | `UUID` | PK, DEFAULT gen_random_uuid() | |
+| `character_id` | `UUID` | FK → characters.id ON DELETE CASCADE, NOT NULL | Associated character |
+| `title` | `VARCHAR(255)` | NOT NULL | Note heading/title |
+| `body` | `TEXT` | NOT NULL | Freeform Markdown note body |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT NOW() | Audit creation timestamp |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT NOW() | Audit update timestamp |
+
+**Indexes**:
+- `CREATE INDEX IF NOT EXISTS idx_character_notes_character_id ON player_character.character_notes(character_id);`
 
 ---
 
@@ -535,6 +561,8 @@ erDiagram
 | V2 | `V2__seed_srd_2014_reference_data.sql` | Seed SRD 2014 reference data (classes, lineages, backgrounds, spells, feats) |
 | V3 | `V3__align_reference_data_schema_and_seed_2024.sql` | Align reference data schemas, add unique constraints, JSONB ASI, and seed SRD 2024 |
 | V4 | `V4__add_character_crud_and_roll_tables.sql` | Add character CRUD fields, class progressions, ability rolls, and hp rolls with single-chance indexes |
+| V5 | `V5__add_character_notes_table.sql` | Add persistent character notes table with cascade deletion |
+| V6 | `V6__add_skill_proficiencies_to_characters.sql` | Add skill_proficiencies VARCHAR[] column to characters |
 
 ---
 
@@ -548,6 +576,7 @@ erDiagram
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.3.0 | 2026-10-31 | @jaca | Added character_notes table (V5), skill_proficiencies column (V6), and updated hp_rolls for multiclass support (`refactor-wizard-hp-srd-and-session`) |
 | 1.2.0 | 2026-10-30 | @jaca | Added character CRUD metadata, notes, single-chance ability_rolls and hp_rolls, and class_progressions (character-crud-backend) |
 | 1.1.0 | 2026-10-30 | @jaca | Aligned schema to player_character, added V2/V3 reference tables with dual ruleset unique constraints, ASI JSONB/arrays, and origin feat metadata (reference-data-backend) |
 | 1.0.0 | 2026-10-29 | @jaca | Migrated from `docs/spec/res/data-models.md` and `docs/spec/res/er-diagram.md` |

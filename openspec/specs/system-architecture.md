@@ -1,7 +1,7 @@
 ---
 id: "system-architecture"
 title: "Dungeoneer System Architecture — Living Specification"
-version: "1.1.0"
+version: "1.2.0"
 status: "active"
 owners:
   - "@jaca"
@@ -75,7 +75,7 @@ Dungeon Masters and Players of Dungeons & Dragons need a unified, modern tool to
 | `db` | PostgreSQL 15 | Shared instance, schema-per-service |
 
 - **[RF-03] API Gateway Routing**: All external client traffic enters through `api-gateway` (`:9090`), which routes requests by path prefix:
-  - `/api/auth/**` → `auth-service:8082` (public endpoints: `POST /api/auth/register`, `POST /api/auth/login`)
+  - `/api/auth/**` → `auth-service:8082` (endpoints: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` session verification)
   - `/api/characters/**` → `player-character-service:8080`
   - `/api/spells/**` → `player-character-service:8080`
   - `/api/reference/**` → `player-character-service:8080`
@@ -305,5 +305,6 @@ graph LR
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.2.0 | 2026-10-31 | @jaca | Added GET /api/auth/me session verification endpoint in auth-service and gateway routing (`refactor-wizard-hp-srd-and-session`) |
 | 1.1.0 | 2026-10-30 | @jaca | Integrated auth-service JWT architecture, routing, and security posture from auth-jwt-backend |
 | 1.0.0 | 2026-10-29 | @jaca | Migrated from `docs/spec/SPEC.md`, `docs/spec/res/architecture-diagram.md`, and `docs/ARCHITECTURE.md` into OpenSpec format |
