@@ -10,7 +10,9 @@
 - **Domain Unit Tests (JUnit 5, zero Spring context)**:
   - `ItemMechanicsTest`: Validates invariants on `WeaponMechanics` (composite damage rolls, dice regex, versatile die), `ArmorMechanics` (`LIGHT`, `MEDIUM`, `HEAVY`, `ROBE`, `SHIELD`), and `ConsumableMechanics`.
   - `Srd2014RulesEngineTest` & `Srd2024RulesEngineTest`: Verifies dynamic AC calculation across all 5 `ArmorCategory` values, Unarmored Defense interaction with `ROBE` vs standard armor, passive `acBonus` stacking, and XP threshold table resolution.
-  - `LevelUpServiceTest`: Verifies XP vs Milestone level-up, unrestricted multiclassing, Subclass binding at `subclassLevel`, HP calculation (`ROLL`, `AVERAGE`, `MAX` + CON mod + `hpPerLevelBonus`), automatic unlocking of `CLASS` and `SUBCLASS` feats, and ASI (+2 or +1/+1, max 20) vs Feat branching.
+  - `LevelUpServiceTest`: Verifies XP vs Milestone level-up, unrestricted multiclassing, Subclass binding at `subclassLevel`, server-locked `character.getHpCalculationMethod()` (`ROLLED` via `HpRoll` token verification, `AVERAGE`, `MAX` + CON mod + `hpPerLevelBonus`), automatic unlocking of `CLASS` and `SUBCLASS` feats, and ASI (+2 or +1/+1, max 20) vs `GENERAL`/`ORIGIN` Feat branching with automatic application of `abilityBonuses` and retroactive `hpPerLevelBonus`.
+  - `CreateCharacterServiceTest`: Verifies starting level > 1 initializes character at Level 1 with target level's XP floor, unlocks Level 1 class/subclass (`subclassLevel == 1`) and `SRD_2024` Origin Feats, and persists `hpCalculationMethod`.
+  - `AuthServiceTest`: Verifies `toggleDungeonMasterRole` toggles `Role.DUNGEON_MASTER` on/off while preserving `Role.PLAYER` and returns a freshly signed JWT.
   - `InventoryServiceTest` & `RestServiceTest`: Verifies equip/unequip AC recalculation, max 3 attuned items enforcement, consumable dice rolling with auto-decrement/removal at `quantity == 0`, and Short/Long Rest charge recovery.
 - **Testcontainers Integration Tests (`PostgreSQL 15`)**:
   - Verifies clean execution of Flyway migrations `V16`, `V17`, and `V18` on top of `V1`–`V15`.

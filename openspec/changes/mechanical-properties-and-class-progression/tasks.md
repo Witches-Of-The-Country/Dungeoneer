@@ -41,23 +41,37 @@
 - [x] Update `CreateHomebrewDialog` (`components/homebrew/create-homebrew-dialog.tsx`) with dynamic mechanical sub-forms for Weapons (damage rolls array, versatile die, magic bonus, weapon properties), Armor (`baseAc`, `armorCategory` including `ROBE` and `SHIELD`, STR requirement, stealth disadvantage), Consumables (`effectType`, `diceFormula`), Feats (`featType`, passive bonuses, active actions/charges), Classes (`subclassLevel` and level 1–20 feats), and Subclasses.
 - [x] Update `/encyclopedia/classes` (`app/encyclopedia/classes/page.tsx`) to render the complete level 1–20 progression table (`Bônus de Proficiência`, `Características de Classe`) and expandable Subclass cards with their level-gated features.
 
+### Phase 7: Spec Alignment & Bug Remediation (`bug-list-spec-implementation.md`)
+- [x] **Phase 7.1 (`auth-service`)**: Add `User.removeRole(Role)` (preserving `Role.PLAYER`), `toggleDungeonMasterRole(UUID userId)` in `AuthService`, and `POST /api/auth/me/roles/toggle-dm` in `AuthController` returning `AuthResponseDto` with refreshed JWT, plus unit/controller tests.
+- [x] **Phase 7.2 (`player-character-service`)**:
+  - Update `CreateCharacterRequest`, `CreateCharacterCommand`, and `CreateCharacterService` to support `subclassId` (when `subclassLevel == 1`) and `originFeatId` (`SRD_2024`), always initialize characters at `level = 1` with `experiencePoints = rulesEngine.getXpForLevel(targetLevel)`, unlock Level 1 `archetype_feats` / `subclass_feats` / `originFeatId`, and apply initial `MechanicalEffects`.
+  - Update `LevelUpService` to enforce `character.getHpCalculationMethod()` server-side (validating and consuming `hpRollId` from `HpRollRepository` for `ROLLED`, ignoring client `hpIncrease`), apply `abilityBonuses` (max 20) and retroactive `hpPerLevelBonus` when `selectedFeatId` is chosen, and recalculate `hasPendingLevelChoices`.
+  - Update `CreateHomebrewArchetypeRequest`, `CreateHomebrewSubclassRequest`, and `HomebrewService` to accept `subclassLevel` and hybrid Level 1–20 progression feature entries (inline feature definitions + existing `featId`s).
+  - Add RFC 7807 `ProblemDetail` handlers for `HttpMessageNotReadableException` and `MethodArgumentTypeMismatchException` in `GlobalExceptionHandler`.
+- [x] **Phase 7.3 (`dungeoneer-frontend` — Auth, Creation & Level Up)**:
+  - Add `toggleDM()` in `lib/hooks/use-auth.ts` and render interactive `Mestre de Jogo (DUNGEON_MASTER)` toggle switches in `app/profile/page.tsx` ("Papéis Ativos") and `components/navbar.tsx` (keeping `PLAYER` fixed).
+  - Refactor `app/characters/new/page.tsx` to select only the primary class, always capture `hpCalculationMethod` (even at Level 1), conditionally show Subclass selector when `subclassLevel === 1`, and allow selecting 1 `ORIGIN` feat in `SRD_2024`.
+  - Update `app/characters/[id]/page.tsx`, `components/character-sheet/xp-progress-bar.tsx`, and `components/character-sheet/level-up-wizard-modal.tsx` to auto-open sequentially for pending levels (`1 -> 2 -> ... -> N`), allow unrestricted class/multiclass selection in Step 1, lock HP calculation to `character.hpCalculationMethod` (with server Hit Die roll when `ROLLED`), add ASI vs `GENERAL`/`ORIGIN` Feat toggle & picker (with informational prerequisites), and sanitize optional `UUID` fields.
+- [x] **Phase 7.4 (`dungeoneer-frontend` — Homebrew & Class Encyclopedia)**:
+  - Complete mechanical sub-forms in `components/homebrew/create-homebrew-dialog.tsx` and `lib/api/homebrew.ts` for Weapons, Armor/Robes/Shields, Consumables, Feats, and the hybrid Level 1–20 feature builder for Classes and Subclasses (6th tab).
+  - Create `components/encyclopedia/class-detail-modal.tsx` and wire `components/encyclopedia/reference-card.tsx` and `app/encyclopedia/classes/page.tsx` so clicking a class opens the modal with proficiencies, Level 1–20 Progression Table, and expandable Subclasses.
+
 ## Security Validation Tasks
 
 - [x] Validate all incoming request DTOs (`AddExperienceRequest`, `LevelUpRequest`, `RestRequest`, `AddCharacterItemRequest`, `UpdateCharacterItemRequest`, `CreateHomebrewItemRequest`, `CreateHomebrewFeatRequest`, `CreateHomebrewSubclassRequest`) with Jakarta Validation annotations (`@NotNull`, `@NotBlank`, `@Min`, `@Max`, `@Pattern`, `@Valid`).
-- [x] Enforce server-side dice notation regex validation (`^\d{1,2}d(4|6|8|10|12|20|100)([+-]\d{1,3})?$`), max 3 attuned items invariant, campaign XP lock (`campaignId != null`), and server-validated `HpRoll` token verification on level-up HP rolls.
-- [x] Enforce role-based access control (`DUNGEON_MASTER` and `ADMIN`) on `POST /api/reference/homebrew/subclasses` and character ownership checks on all character progression/inventory endpoints.
+- [x] Enforce server-side dice notation regex validation (`^\d{1,2}d(4|6|8|10|12|20|100)([+-]\d{1,3})?$`), max 3 attuned items invariant, campaign XP lock (`campaignId != null`), and server-validated `HpRoll` token verification on level-up HP rolls (ignoring client `hpIncrease`).
+- [x] Enforce role-based access control (`DUNGEON_MASTER` and `ADMIN`) on `POST /api/reference/homebrew/subclasses`, preserve `Role.PLAYER` invariant on `POST /api/auth/me/roles/toggle-dm`, and verify character ownership checks on all character progression/inventory endpoints.
 
 ## Test Tasks
 
-- [x] Write backend unit tests (`Srd2014RulesEngineTest`, `Srd2024RulesEngineTest`, `ItemMechanicsTest`, `MechanicalEffectsTest`, `LevelUpServiceTest`, `InventoryServiceTest`, `RestServiceTest`) covering AC calculation for `LIGHT`/`MEDIUM`/`HEAVY`/`ROBE`/`SHIELD`, consumable usage and auto-removal at quantity 0, unrestricted multiclassing, ASI vs Feat branching, and Short/Long Rest recharge.
-- [x] Write backend Testcontainers integration tests (`PlayerCharacterProgressionIT`, `ReferenceDataProgressionIT`) verifying Flyway migrations `V16`–`V18`, JSONB serialization/deserialization, level-up persistence, inventory equip/consumable endpoints, and homebrew subclass creation.
-- [x] Write frontend Vitest unit tests (`__tests__/character-sheet.test.tsx`, `__tests__/level-up-wizard.test.tsx`, `__tests__/homebrew-creation.test.tsx`, `__tests__/encyclopedia-browse.test.tsx`) verifying the activated `Inventário`, `Talentos`, and `Ações` tabs, XP bar & Level Up Wizard flows, dynamic Homebrew mechanical inputs, and Class Encyclopedia 1–20 progression table.
-- [x] Run `mvn clean verify` in `player-character-service/backend` (confirming >= 80% JaCoCo line coverage) and `npm run test:unit && npm run build` in `dungeoneer-frontend`.
+- [x] Write/update backend unit & integration tests (`AuthServiceTest`, `CreateCharacterServiceTest`, `LevelUpServiceTest`, `HomebrewServiceTest`, `PlayerCharacterProgressionIT`) covering DM role toggle, starting level > 1 XP floor & Level 1 feature unlocks, server-locked `hpCalculationMethod` + `HpRoll` token verification, ASI vs Feat `MechanicalEffects`, and hybrid Homebrew Class/Subclass creation.
+- [x] Write/update frontend Vitest unit tests (`__tests__/character-sheet.test.tsx`, `__tests__/level-up-wizard.test.tsx`, `__tests__/homebrew-creation.test.tsx`, `__tests__/encyclopedia-browse.test.tsx`) covering sequential pending level-ups, multiclass & feat picker in `LevelUpWizardModal`, dynamic Homebrew mechanical forms, and `ClassDetailModal` in `/encyclopedia/classes`.
+- [x] Run `mvn clean test` in `auth-service/backend`, `mvn clean verify` in `player-character-service/backend` (confirming >= 80% JaCoCo line coverage), and `npm run test:unit && npm run build` in `dungeoneer-frontend`.
 
 ## Documentation Tasks
 
 - [x] Verify OpenAPI 3.0 annotations (`@Operation`, `@ApiResponse`, `@Schema`) on all new and updated endpoints in `PlayerCharacterController` and `ReferenceDataController`.
-- [x] Ensure all 4 delta specification files in `openspec/changes/mechanical-properties-and-class-progression/specs/` accurately reflect implemented schemas, endpoints, and UI contracts.
+- [x] Ensure all 5 delta specification files in `openspec/changes/mechanical-properties-and-class-progression/specs/` accurately reflect implemented schemas, endpoints, and UI contracts.
 
 ## Review Gate
 
