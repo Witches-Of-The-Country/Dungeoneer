@@ -1,10 +1,9 @@
 # Tasks: 007-srd-class-progression-feats-and-encyclopedia-multiselect-filters
 
-## Phase 1: Database Migration V24 (Class & Subclass Progression Feats Seed)
-- [ ] 1.1 Draft Flyway migration `V24__seed_complete_srd_class_and_subclass_progression_feats.sql` containing all SRD class features for all 12 classes (Barbarian, Bard, Cleric, Druid, Fighter, Monk, Paladin, Ranger, Rogue, Sorcerer, Warlock, Wizard) for levels 1 to 20.
-- [ ] 1.2 Include subclass progression milestones for official subclasses across all tiers (levels 3, 6, 7, 10, 11, 14, 15, 17, 18, 20).
+## Phase 1: Database Verification & Progression Feats
+- [ ] 1.1 Verify existing `V20` progression feats in `player_character.archetype_feats` and `player_character.subclass_feats` for levels 1 to 20 across all 12 classes.
+- [ ] 1.2 If any class progression feats or subclass progression feats are missing, draft Flyway migration `V25__seed_missing_srd_class_and_subclass_progression_feats.sql`.
 - [ ] 1.3 Link feats to `archetype_feats` and `subclass_feats` tables with appropriate `unlock_level`.
-- [ ] 1.4 Test migration V24 locally against PostgreSQL container.
 
 ## Phase 2: Backend Repository & Controller Multi-Select Filter Support
 - [ ] 2.1 Update `SpringDataItemRepository.java`:
@@ -27,15 +26,23 @@
 - [ ] 4.3 In `app/encyclopedia/items/page.tsx`, replace single dropdowns with multi-select chip toggle bars for Category and Rarity.
 - [ ] 4.4 Verify Feats, Classes, and Lineages pages properly handle multi-select filters.
 
-## Phase 5: Verification & Testing
-- [ ] 5.1 Run backend tests (`mvn test`).
-- [ ] 5.2 Run frontend unit tests (`npm run test:unit`).
-- [ ] 5.3 Run frontend production build (`npm run build`).
+## Phase 5: Rich Feat Selector in Level Up Wizard
+- [x] 5.1 In `components/character-sheet/level-up-wizard-modal.tsx`, replace the `<select>` dropdown in the Feat step with a rich Feat Selector interface.
+- [x] 5.2 Implement search input (client-side debounced search matching feat name, description, and prerequisites).
+- [x] 5.3 Implement category filter chips (Todos, Origem, Geral, Estilo de Luta, Épico, Homebrew).
+- [x] 5.4 Implement pagination (e.g. 5-6 feats per page) with previous/next controls, page indicator, and total count.
+- [x] 5.5 Implement "Ver Detalhes" dialog/pop-up showing complete feat mechanics, requirements, and description.
+- [x] 5.6 Add visual selection indicator (border highlight, checkmark, selected summary badge).
+
+## Phase 6: Verification & Testing
+- [ ] 6.1 Run backend tests (`mvn test`).
+- [ ] 6.2 Run frontend unit tests (`npm run test:unit`).
+- [ ] 6.3 Run frontend production build (`npm run build`).
 
 ## Review Gate
-- [ ] All 5 acceptance criteria validated.
-- [ ] Migration V24 executes without errors on restart.
+- [ ] All 6 acceptance criteria validated.
 - [ ] Filtering items by "Incomum" or "Raro" displays matching items.
 - [ ] Filtering items by "Poções" or "Equipamento de Aventura" displays matching items.
 - [ ] Multi-select OR filters on spells and items function smoothly.
+- [ ] Rich Feat Selector in Level Up Wizard allows searching, paginating, viewing details, and selecting feats.
 - [ ] Conventional commit prepared for user approval.

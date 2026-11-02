@@ -13,20 +13,26 @@ Currently:
 ## Scope
 
 ### In Scope
-- Database migration (`V24`) seeding complete SRD 2014/2024 class progression features and subclass progression features for all 12 classes from levels 1 to 20, linked to `archetype_feats` and `subclass_feats`.
+- Database migration (`V25`) verifying and completing any missing SRD 2014/2024 class progression features and subclass progression features for all 12 classes from levels 1 to 20, linked to `archetype_feats` and `subclass_feats`.
 - Fixing the Item Rarity filter by aligning frontend values with database enum strings (`'COMMON'`, `'UNCOMMON'`, `'RARE'`, `'VERY_RARE'`, `'LEGENDARY'`, `'ARTIFACT'`).
 - Fixing the Item Category filter by supporting both `item_category` and `item_type` matching or migrating item categories to standard values (`WEAPON`, `ARMOR`, `POTION`, `RING`, `ROD`, `SCROLL`, `STAFF`, `WAND`, `WONDROUS`, `ADVENTURING_GEAR`).
 - Upgrading Spells filters to multi-select chip/toggle controls with OR logic for spell levels (0 to 9), magic schools, and ruleset.
 - Upgrading Items filters to multi-select chip/toggle controls with OR logic for categories, rarities, and ruleset.
 - Upgrading Feats, Classes, and Lineages filters to multi-select controls where applicable.
 - Backend repository and controller updates to accept collections or comma-separated lists for filtered properties and query them using PostgreSQL `ANY(string_to_array(...))` or JPA `IN (...)`.
+- Level Up Wizard Feat Selector upgrade (`level-up-wizard-modal.tsx`): Replacing the simple `<select>` dropdown with a rich, interactive selector featuring:
+  - Search bar (filtering by feat name, prerequisite, and description).
+  - Category / type filter chips (All, Origin, General, Fighting Style, Epic Boon, Homebrew).
+  - Paginated list / lazy load (5-8 feats per page with next/prev buttons) to handle dozens or hundreds of feats smoothly.
+  - Interactive Feat Card with visual selection state.
+  - "Ver Detalhes" pop-up / modal displaying complete description, mechanics, and prerequisite requirements.
 
 ### Out of Scope
 - Adding homebrew classes or homebrew subclasses outside SRD 2014/2024.
 - Automated spellbook auto-learning mechanics for non-prepared casters.
 
 ## Proposed Solution
-1. **Migration V24**: Seed all remaining SRD class features (e.g., Barbarian Extra Attack, Brutal Critical, Rage improvements; Fighter Indomitable, Extra Attack (2) and (3); Rogue Uncanny Dodge, Evasion, Reliable Talent, Blindsense, Slippery Mind, Elusive, Stroke of Luck; Paladin Auras; Ranger features; Monk Ki/Focus progression, Diamond Body, Empty Body; Druid Wild Shape enhancements, Timeless Body; Cleric Divine Intervention, Destroy Undead; Bard Font of Inspiration, Magical Secrets; Wizard Spell Mastery, Signature Spells; Warlock Mystic Arcanum; Sorcerer Metamagic and Sorcerous Restoration) and all subclass progression milestones for all official subclasses.
+1. **Migration V25**: Seed any missing SRD class features (e.g., Barbarian Extra Attack, Brutal Critical, Rage improvements; Fighter Indomitable, Extra Attack (2) and (3); Rogue Uncanny Dodge, Evasion, Reliable Talent, Blindsense, Slippery Mind, Elusive, Stroke of Luck; Paladin Auras; Ranger features; Monk Ki/Focus progression, Diamond Body, Empty Body; Druid Wild Shape enhancements, Timeless Body; Cleric Divine Intervention, Destroy Undead; Bard Font of Inspiration, Magical Secrets; Wizard Spell Mastery, Signature Spells; Warlock Mystic Arcanum; Sorcerer Metamagic and Sorcerous Restoration) and all subclass progression milestones for all official subclasses.
 2. **Item Filters Bug Fixes**:
    - Update `app/encyclopedia/items/page.tsx` `ITEM_RARITIES` array to use English backend values (`COMMON`, `UNCOMMON`, etc.) while keeping Portuguese labels (`"Comum"`, `"Incomum"`).
    - In `SpringDataItemRepository.java`, update the SQL query so category filtering matches against either `i.item_category` or `i.item_type` (case-insensitive / mapped enum), allowing filters like `POTION` or `ADVENTURING_GEAR` to match records correctly.
@@ -34,11 +40,20 @@ Currently:
    - In backend controllers (`ReferenceDataController`) and repositories (`SpringDataSpellRepository`, `SpringDataItemRepository`, `SpringDataFeatRepository`), accept list parameters (`levels`, `schools`, `categories`, `rarities`, `rulesets`) and filter using `ANY(string_to_array(:param, ','))` or `IN (...)`.
    - In frontend pages (`/encyclopedia/spells`, `/encyclopedia/items`), replace single `<select>` with multi-select badge/chip filter bars that toggle values in an array and trigger TanStack Query refetches with OR semantics.
 
+4. **Rich Feat Selector in Level Up Wizard**:
+   - In `components/character-sheet/level-up-wizard-modal.tsx`, replace the `<select>` dropdown in the ASI vs Feat step with a dedicated component/sub-view:
+     - Search input with instantaneous debounce/client filtering on name and prerequisites.
+     - Type category chips (Todos, Origem, Geral, Estilo de Luta, Épico, Homebrew).
+     - Clean pagination (e.g. 6 feats per page) with page controls and total count.
+     - Feat cards displaying name, type badge, prerequisites badge, and truncated description.
+     - "Ver Detalhes" button opening a Dialog with full description and mechanics.
+     - "Selecionar" toggle button with clear visual feedback.
+
 ### Impacted Files
 
 | File | Status | Layer | Description |
 |------|--------|-------|-------------|
-| `V24__seed_complete_srd_class_and_subclass_progression_feats.sql` | Created | Database | Seed progression feats and milestones for all 12 classes (levels 1-20) |
+| `V25__seed_missing_srd_class_and_subclass_progression_feats.sql` | Created | Database | Seed any missing progression feats and milestones for all 12 classes (levels 1-20) |
 | `SpringDataItemRepository.java` | Modified | Adapter Out | Multi-select OR query for item categories and rarities; fix category/type matching |
 | `SpringDataSpellRepository.java` | Modified | Adapter Out | Multi-select OR query for spell levels and schools |
 | `ReferenceDataController.java` | Modified | Adapter In | Accept list parameters for item and spell filters |
@@ -47,6 +62,7 @@ Currently:
 | `app/encyclopedia/items/page.tsx` | Modified | Frontend | Multi-select chip filters, correct rarity enum values, and category mapping |
 | `app/encyclopedia/spells/page.tsx` | Modified | Frontend | Multi-select chip filters for spell levels and schools with OR logic |
 | `app/encyclopedia/feats/page.tsx` | Modified | Frontend | Ensure multi-select chip filters use OR logic for types and rulesets |
+| `components/character-sheet/level-up-wizard-modal.tsx` | Modified | Frontend | Replace feat `<select>` dropdown with rich paginated search selector and detail pop-up |
 
 ## Defensive Security & Validation Considerations
 - **SQL Injection Prevention**: All multi-select filtering uses parameterized queries (`ANY(string_to_array(:levelsStr, ','))` or Spring Data `IN (:list)`); no dynamic string concatenation in SQL queries.
@@ -54,7 +70,7 @@ Currently:
 
 ## Testing Strategy & Shift-Left Plan
 - **Database & Migration Tests**:
-  - Verify migration `V24` executes cleanly without constraint violations.
+  - Verify migration `V25` executes cleanly without constraint violations.
   - Test `ReferenceDataRepository.findProgressionFeats` for level 5, 11, and 20 across all classes.
 - **Repository Unit & Integration Tests**:
   - Test `SpringDataItemRepository` filtering by multiple rarities (`RARE,VERY_RARE`) returns items matching either rarity (OR logic).
@@ -67,7 +83,7 @@ Currently:
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| Large V24 migration script payload | Low | Script uses standard PostgreSQL batch `INSERT` statements with `ON CONFLICT DO NOTHING`. |
+| Large V25 migration script payload | Low | Script uses standard PostgreSQL batch `INSERT` statements with `ON CONFLICT DO NOTHING`. |
 | Breaking existing single-select query callers | Low | Backend query methods accept both single and comma-separated lists gracefully. |
 
 ## Acceptance Criteria (Given-When-Then)
@@ -96,3 +112,8 @@ Currently:
 - **Given** a user viewing `/encyclopedia/items`,
 - **When** the user selects multiple rarities (e.g. Comum e Incomum) or multiple categories (e.g. Armas e Armaduras),
 - **Then** the items displayed include items matching any of the selected rarities and any of the selected categories.
+
+### AC 6: Rich Feat Selector in Level Up Wizard
+- **Given** a player leveling up a character to an ASI milestone (level 4, 8, 12, 16, 19) and choosing "Escolher Talento",
+- **When** the player views the Feat selection interface,
+- **Then** the player can search feats by typing in the search bar, filter by category/type chips, navigate pages smoothly with pagination, click "Ver Detalhes" to view full feat mechanics in a dialog, and select their chosen feat with visual card confirmation.
