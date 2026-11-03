@@ -41,6 +41,45 @@
 
 ### 3. Contexto de Transição para a Fase 3
 - A Fase 2 está 100% concluída e testada.
-- **Próximos Passos (Fase 3)**: Validação na criação de personagem e no Level-Up:
-  - Verificação da validação dinâmica de pré-requisitos em `CreateCharacterService` e `LevelUpService`.
-  - Verificação de endpoints de talentos `/api/reference/feats` para `featTypes=GENERAL` e `featTypes=ORIGIN`.
+
+---
+
+## Fase 3: Validação na Criação de Personagem e no Level-Up
+
+### 1. Arquivos Envolvidos
+- `player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/application/service/CreateCharacterServiceTest.java`
+  - Adicionado caso de teste unitário `shouldRejectOriginFeatWhenPrerequisitesNotMet` validando que `CreateCharacterService` bloqueia a seleção de talentos de origem (ou gerais) caso as regras dinâmicas de pré-requisito (`prerequisiteRules`, como valor mínimo de atributo) não sejam satisfeitas.
+- `player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/ReferenceDataControllerTest.java`
+  - Adicionado caso de teste de controlador Web MVC `shouldFilterFeatsByFeatTypesAndReturnMechanicalEffects` assegurando que `/api/reference/feats?featTypes=ORIGIN&featTypes=GENERAL` retorna a listagem filtrada de talentos com suas estruturas completas de `mechanicalEffects` (incluindo `prerequisiteRules`).
+
+### 2. Resultados de Verificação e Testes
+- **Comando Executado**: `mvn -f player-character-service/backend/pom.xml test`
+- **Resultado**: `BUILD SUCCESS`
+- **Sumário de Testes**: 231 testes executados (2 novos testes cobrindo validação de pré-requisito e endpoint de talentos), 0 falhas, 0 erros, 1 ignorado.
+
+---
+
+## Fase 4 & 5: Verificação do Frontend, Suíte Completa e Deploy em Contêiner
+
+### 1. Testes Unitários do Frontend
+- **Comando Executado**: `npm --prefix dungeoneer-frontend run test:unit`
+- **Resultado**:
+  - `Test Files: 19 passed (19)`
+  - `Tests: 70 passed (70)`
+  - Destaque: `level-up-wizard.test.tsx` e `character-wizard.test.tsx` validaram o seletor de talentos gerais e de origem, o filtro de categorias e a integração de dados de referência.
+
+### 2. Build de Produção do Frontend
+- **Comando Executado**: `npm --prefix dungeoneer-frontend run build`
+- **Resultado**: `Compiled successfully` com todas as 17 rotas estáticas e dinâmicas geradas sem erros de tipagem TypeScript.
+
+### 3. Rebuild e Execução do Contêiner Docker
+- **Comando Executado**: `docker compose build player-character-service; docker compose up -d player-character-service`
+- **Resultado**:
+  - Imagem `dungeoneer-player-character-service` compilada e empacotada com sucesso.
+  - Migração Flyway `V26__seed_complete_srd_general_and_origin_feats.sql` aplicada com sucesso no PostgreSQL compartilhado.
+  - Endpoints REST validados em tempo real no contêiner:
+    - `/api/reference/feats?featTypes=ORIGIN`: 10 talentos de origem retornados (Alerta, Artesão, Atacante Selvagem, Brigão de Taverna, Curandeiro, Habilidoso, Iniciado em Magia, Músico, Sortudo, Vigoroso) com metadados `spellChoice` e bônus de ação estruturados.
+    - `/api/reference/feats?featTypes=GENERAL&limit=100`: 88 talentos gerais retornados com descrições, regras de pré-requisito e bônus.
+    - `/api/reference/progression-feats`: Níveis 1 a 20 de progressão de classe (incluindo Monge Níveis 5–20) validados e retornando características completas.
+
+
