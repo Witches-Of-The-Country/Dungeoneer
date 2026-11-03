@@ -19,6 +19,28 @@
 
 ### 3. Contexto de Transição para a Fase 2
 - A Fase 1 está 100% concluída e validada.
-- **Próximos Passos (Fase 2)**: Suporte de persistência e domínio no backend:
-  - Validação da desserialização completa de `mechanical_effects` em `FeatJpaEntity.java` via Jackson `ObjectMapper`.
-  - Verificação e adição de testes em `MechanicalEffectsTest.java` para garantir que `spellChoice`, `prerequisiteRules` e `abilityBonusChoice` são serializados e desserializados sem perda de dados.
+
+---
+
+## Fase 2: Suporte de Persistência & Domínio no Backend
+
+### 1. Arquivos Envolvidos
+- `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/MechanicalEffects.java`
+  - Modelo de domínio Clean Architecture (zero dependências de framework) suportando `SpellChoice`, `AbilityBonusChoice`, `FeatPrerequisite`, `conditional` e `conditionDescription`.
+- `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/SpellChoice.java`
+  - Record de domínio para seleção de magias e truques concedidos por talentos como *Iniciado em Magia* e *Conjurador de Rituais*.
+- `player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/FeatJpaEntity.java`
+  - Serialização e desserialização completa de `mechanical_effects` via Jackson `ObjectMapper`, eliminando truncamentos e preservando todos os atributos.
+- `player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/out/persistence/FeatJpaEntityTest.java`
+  - Testes unitários para desserialização de JSON rico e conversão round-trip completa (`serializeEffects` -> `deserializeEffects`), garantindo integridade de `spellChoice`, `abilityBonusChoice` e `prerequisiteRules`.
+
+### 2. Resultados de Verificação e Testes
+- **Comando Executado**: `mvn -f player-character-service/backend/pom.xml test`
+- **Resultado**: `BUILD SUCCESS` (01:00 min)
+- **Sumário de Testes**: 229 testes executados (1 novo teste de conversão round-trip), 0 falhas, 0 erros, 1 ignorado.
+
+### 3. Contexto de Transição para a Fase 3
+- A Fase 2 está 100% concluída e testada.
+- **Próximos Passos (Fase 3)**: Validação na criação de personagem e no Level-Up:
+  - Verificação da validação dinâmica de pré-requisitos em `CreateCharacterService` e `LevelUpService`.
+  - Verificação de endpoints de talentos `/api/reference/feats` para `featTypes=GENERAL` e `featTypes=ORIGIN`.
