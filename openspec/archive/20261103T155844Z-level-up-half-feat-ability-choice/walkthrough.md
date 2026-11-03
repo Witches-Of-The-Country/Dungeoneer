@@ -54,8 +54,26 @@
 
 ### 3. Contexto de Transição para a Fase 3
 - A Fase 2 está 100% concluída e testada.
-- **Próximos Passos (Fase 3)**: Verificação & Integração Ponta a Ponta:
-  - Execução da suíte completa de testes backend (`mvn test`).
-  - Execução de build de produção do frontend (`npm run build`).
-  - Rebuild e reinício do contêiner Docker `player-character-service`.
-  - Validação funcional ao vivo e encerramento/arquivamento da spec.
+
+---
+
+## Fase 3: Verificação & Integração Ponta a Ponta
+
+### 1. Suíte de Testes do Backend
+- **Comando**: `mvn -f player-character-service/backend/pom.xml test`
+- **Resultado**: `BUILD SUCCESS` (236 testes executados, 0 falhas, 0 erros, 1 ignorado).
+
+### 2. Suíte de Testes do Frontend
+- **Comando**: `npm --prefix dungeoneer-frontend run test:unit`
+- **Resultado**: `19 test files passed (19)`, `71 tests passed (71)` (0 falhas).
+
+### 3. Build de Produção do Frontend
+- **Comando**: `npm --prefix dungeoneer-frontend run build`
+- **Resultado**: `Compiled successfully` com Turbopack (17 rotas estáticas e dinâmicas geradas sem erros de tipagem).
+
+### 4. Rebuild do Contêiner Docker
+- **Comando**: `docker compose build player-character-service; docker compose up -d player-character-service`
+- **Resultado**:
+  - Imagem `dungeoneer-player-character-service:latest` recompilada e contêiner recriado com sucesso.
+  - Inicialização concluída em 11 segundos com status `healthy`.
+

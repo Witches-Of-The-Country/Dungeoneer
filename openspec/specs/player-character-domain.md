@@ -1,7 +1,7 @@
 ---
 id: "player-character-domain"
 title: "Player Character Domain & API — Living Specification"
-version: "1.3.0"
+version: "1.4.0"
 status: "active"
 owners:
   - "@jaca"
@@ -404,6 +404,7 @@ Capabilities granted by Feats are structured via immutable domain records in `do
   ```
 - `MechanicalEffects`: encapsulates all structured bonuses, proficiencies, actions, `abilityBonusChoice`, dynamic `prerequisiteRules` (`FeatPrerequisite`), and `spellChoice`.
 - **Validation**: `CreateCharacterService` and `LevelUpService` evaluate `prerequisiteRules` (ability minimums and level thresholds) before persisting character feats, rejecting invalid feat selections with `CharacterValidationException` (`422 Unprocessable Entity`).
+- **Half-Feat Ability Choice**: When selecting a feat with `abilityBonusChoice` upon level-up, the client must supply `abilityScoreIncreases` selecting exactly `chooseCount` ability entries from `allowedAbilities`, each with bonus value equal to `bonusAmount` (+1). `LevelUpService` validates these choices and updates the character's `AbilityScores` (capped at 20), rejecting invalid or missing selections with `CharacterValidationException` (`422 Unprocessable Entity`). Selection of non-half feats with ability increases is likewise rejected.
 
 Example `ProblemDetail` payload:
 ```json
@@ -431,6 +432,7 @@ Example `ProblemDetail` payload:
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.4.0 | 2026-11-03 | @jaca | Added validation and application of half-feat ability choices (`abilityBonusChoice`) during level-up (`level-up-half-feat-ability-choice`) |
 | 1.3.0 | 2026-11-03 | @jaca | Added `SpellChoice` record, full `MechanicalEffects` Jackson mapping, and dynamic prerequisite evaluation for SRD General and Origin Feats (`009-seed-complete-srd-general-and-origin-feats`) |
 | 1.2.0 | 2026-10-31 | @jaca | Added Character Notes CRUD (`PUT /api/characters/{id}/notes/{noteId}`), multiclass Hit Die rolling and validation (`isSecondaryClass`), and skill proficiencies (`refactor-wizard-hp-srd-and-session`) |
 | 1.1.0 | 2026-10-30 | @jaca | Implemented character CRUD, single-chance server-side rolls, Dual Ruleset ASI, server-side HP, and X-User-Id scoping (`character-crud-backend`) |

@@ -20,13 +20,13 @@
 - [x] 2.4 Update frontend unit tests in `level-up-wizard.test.tsx` verifying half-feat ability selection rendering, validation, and payload submission.
 
 ## Phase 3: Verification & Integration
-- [ ] 3.1 Run backend tests (`mvn test -f player-character-service/backend/pom.xml`).
-- [ ] 3.2 Run frontend unit tests (`npm --prefix dungeoneer-frontend run test:unit`).
-- [ ] 3.3 Run frontend production build (`npm --prefix dungeoneer-frontend run build`).
-- [ ] 3.4 Rebuild Docker container `player-character-service` and verify live level-up with half-feat.
+- [x] 3.1 Run backend tests (`mvn test -f player-character-service/backend/pom.xml`).
+- [x] 3.2 Run frontend unit tests (`npm --prefix dungeoneer-frontend run test:unit`).
+- [x] 3.3 Run frontend production build (`npm --prefix dungeoneer-frontend run build`).
+- [x] 3.4 Rebuild Docker container `player-character-service` and verify live level-up with half-feat.
 
 ## Review Gate
-- [ ] All implementation tasks complete
-- [ ] All tests passing
-- [ ] Proposal acceptance criteria verified
-- [ ] Ready for `sdd-spec-archive`
+- [x] All implementation tasks complete
+- [x] All tests passing
+- [x] Proposal acceptance criteria verified
+- [x] Ready for `sdd-spec-archive`
