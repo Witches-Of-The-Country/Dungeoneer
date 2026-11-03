@@ -1,7 +1,7 @@
 ---
 id: "player-character-data-model"
 title: "Player Character Data Model & Persistence — Living Specification"
-version: "1.3.0"
+version: "1.5.0"
 status: "active"
 owners:
   - "@jaca"
@@ -570,6 +570,8 @@ erDiagram
 | V5 | `V5__add_character_notes_table.sql` | Add persistent character notes table with cascade deletion |
 | V6 | `V6__add_skill_proficiencies_to_characters.sql` | Add skill_proficiencies VARCHAR[] column to characters |
 | V24 | `V24__normalize_srd_item_categories_and_seed_catalog.sql` | Normalize item categories from MAGIC to canonical categories (POTION, WONDROUS, RING, SCROLL, etc.) and seed iconic SRD catalog items |
+| V25 | `V25__seed_complete_srd_classes_and_subclasses_progression_feats.sql` | Complete 1-20 class progression features and subclass archetypes for all SRD classes |
+| V26 | `V26__seed_complete_srd_general_and_origin_feats.sql` | Complete catalog of SRD 2014 & SRD 2024 General Feats, Origin Feats with `spellChoice`, and prerequisite metadata |
 
 ---
 
@@ -583,6 +585,7 @@ erDiagram
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.5.0 | 2026-11-03 | @jaca | Seeded complete SRD 2014 and SRD 2024 General Feats, Origin Feats, structured `spellChoice` metadata, and dynamic prerequisite rules (`009-seed-complete-srd-general-and-origin-feats`) |
 | 1.4.0 | 2026-11-02 | @jaca | Normalized item categories to canonical taxonomy, seeded iconic SRD items, and aligned query filtering (`008-srd-item-catalog-seed-and-category-normalization`) |
 | 1.3.0 | 2026-10-31 | @jaca | Added character_notes table (V5), skill_proficiencies column (V6), and updated hp_rolls for multiclass support (`refactor-wizard-hp-srd-and-session`) |
 | 1.2.0 | 2026-10-30 | @jaca | Added character CRUD metadata, notes, single-chance ability_rolls and hp_rolls, and class_progressions (character-crud-backend) |

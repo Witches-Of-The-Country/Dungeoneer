@@ -1,7 +1,7 @@
 ---
 id: "player-character-domain"
 title: "Player Character Domain & API — Living Specification"
-version: "1.2.0"
+version: "1.3.0"
 status: "active"
 owners:
   - "@jaca"
@@ -390,6 +390,21 @@ All `/api/characters/**` endpoints require the `X-User-Id` header (`UUID`) and e
 | `MulticlassPrerequisiteException` | `422 Unprocessable Entity` | Doesn't meet ability score minimum |
 | `SpellSlotExhaustedException` | `409 Conflict` | No spell slots remaining |
 
+### Feat Mechanical Effects & Prerequisite Domain Model
+
+Capabilities granted by Feats are structured via immutable domain records in `domain/model/`:
+- `SpellChoice`: encapsulates granted cantrips/spells, level, and class list (e.g. Magic Initiate, Ritual Caster):
+  ```java
+  public record SpellChoice(
+      int cantripsCount,
+      int spellsCount,
+      int spellLevel,
+      List<String> allowedClasses
+  ) {}
+  ```
+- `MechanicalEffects`: encapsulates all structured bonuses, proficiencies, actions, `abilityBonusChoice`, dynamic `prerequisiteRules` (`FeatPrerequisite`), and `spellChoice`.
+- **Validation**: `CreateCharacterService` and `LevelUpService` evaluate `prerequisiteRules` (ability minimums and level thresholds) before persisting character feats, rejecting invalid feat selections with `CharacterValidationException` (`422 Unprocessable Entity`).
+
 Example `ProblemDetail` payload:
 ```json
 {
@@ -416,6 +431,7 @@ Example `ProblemDetail` payload:
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.3.0 | 2026-11-03 | @jaca | Added `SpellChoice` record, full `MechanicalEffects` Jackson mapping, and dynamic prerequisite evaluation for SRD General and Origin Feats (`009-seed-complete-srd-general-and-origin-feats`) |
 | 1.2.0 | 2026-10-31 | @jaca | Added Character Notes CRUD (`PUT /api/characters/{id}/notes/{noteId}`), multiclass Hit Die rolling and validation (`isSecondaryClass`), and skill proficiencies (`refactor-wizard-hp-srd-and-session`) |
 | 1.1.0 | 2026-10-30 | @jaca | Implemented character CRUD, single-chance server-side rolls, Dual Ruleset ASI, server-side HP, and X-User-Id scoping (`character-crud-backend`) |
 | 1.0.0 | 2026-10-29 | @jaca | Migrated from `README.md`, `docs/USE-CASES.md`, `docs/spec/SPEC.md`, `docs/STATE.md`, and `docs/spec/res/api-contracts.md` |
