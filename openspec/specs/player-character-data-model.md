@@ -542,14 +542,20 @@ erDiagram
 |--------|------|-------------|
 | `id` | `UUID` | PK |
 | `name` | `VARCHAR(100)` | NOT NULL |
+| `name_en` | `VARCHAR(100)` | NULLABLE |
+| `slug` | `VARCHAR(120)` | NOT NULL |
 | `description` | `TEXT` | |
-| `weight` | `DECIMAL(6,2)` | NOT NULL, DEFAULT 0 |
-| `item_type` | `VARCHAR(20)` | NOT NULL (WEAPON, ARMOR, POTION, WONDROUS, etc.) |
-| `rarity` | `VARCHAR(15)` | COMMON, UNCOMMON, RARE, VERY_RARE, LEGENDARY |
-| `requires_attunement` | `BOOLEAN` | NOT NULL, DEFAULT false |
+| `cost` | `VARCHAR(20)` | NULLABLE |
+| `weight` | `VARCHAR(20)` | NOT NULL, DEFAULT '—' |
+| `item_category` | `VARCHAR(30)` | NOT NULL (WEAPON, ARMOR, POTION, WONDROUS, RING, SCROLL, WAND, ROD, STAFF, EQUIPMENT) |
+| `item_type` | `VARCHAR(50)` | NOT NULL (Poção, Item Maravilhoso, Arma, etc.) |
+| `rarity` | `VARCHAR(20)` | COMMON, UNCOMMON, RARE, VERY_RARE, LEGENDARY, ARTIFACT |
+| `attunement` | `BOOLEAN` | NOT NULL, DEFAULT false |
+| `mechanical_properties` | `JSONB` | NULLABLE |
 | `ruleset` | `VARCHAR(10)` | NOT NULL |
 | `source` | `VARCHAR(10)` | NOT NULL, DEFAULT 'SRD' |
 | `owner_id` | `UUID` | NULLABLE |
+| UNIQUE | | (`ruleset`, `slug`) |
 
 ---
 
@@ -563,6 +569,7 @@ erDiagram
 | V4 | `V4__add_character_crud_and_roll_tables.sql` | Add character CRUD fields, class progressions, ability rolls, and hp rolls with single-chance indexes |
 | V5 | `V5__add_character_notes_table.sql` | Add persistent character notes table with cascade deletion |
 | V6 | `V6__add_skill_proficiencies_to_characters.sql` | Add skill_proficiencies VARCHAR[] column to characters |
+| V24 | `V24__normalize_srd_item_categories_and_seed_catalog.sql` | Normalize item categories from MAGIC to canonical categories (POTION, WONDROUS, RING, SCROLL, etc.) and seed iconic SRD catalog items |
 
 ---
 
@@ -576,6 +583,7 @@ erDiagram
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.4.0 | 2026-11-02 | @jaca | Normalized item categories to canonical taxonomy, seeded iconic SRD items, and aligned query filtering (`008-srd-item-catalog-seed-and-category-normalization`) |
 | 1.3.0 | 2026-10-31 | @jaca | Added character_notes table (V5), skill_proficiencies column (V6), and updated hp_rolls for multiclass support (`refactor-wizard-hp-srd-and-session`) |
 | 1.2.0 | 2026-10-30 | @jaca | Added character CRUD metadata, notes, single-chance ability_rolls and hp_rolls, and class_progressions (character-crud-backend) |
 | 1.1.0 | 2026-10-30 | @jaca | Aligned schema to player_character, added V2/V3 reference tables with dual ruleset unique constraints, ASI JSONB/arrays, and origin feat metadata (reference-data-backend) |
