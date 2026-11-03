@@ -12,14 +12,14 @@
 
 - [x] Flyway `V27` (exhaustion, hit_dice_spent) + JPA mappings
 - [x] Domain: `PlayerCharacter.exhaustion`, `ClassProgression` Hit Dice methods
-- [ ] `RulesEngine` rest methods + 2014/2024 implementations
-- [ ] Rewrite `RestService` (short/long, temp HP fix, no-resurrection guard)
+- [x] `RulesEngine` rest methods + 2014/2024 implementations
+- [x] Rewrite `RestService` (short/long, temp HP fix, no-resurrection guard)
 - [ ] Update `RestCommand`, `RestUseCase`, controller, sheet DTOs
 - [ ] Frontend: API types, header buttons, `rest-modal.tsx`, Hit Dice counter, exhaustion badge
 
 ## Test Tasks
 
-- [ ] Unit tests (TP-01/02, TE-01/03/05/06/07)
+- [x] Unit tests (TP-01/02, TE-01/03/05/06/07)
 - [ ] MockMvc tests (TP-03, TE-02/03/04)
 - [ ] Testcontainers integration (TP-04)
 - [ ] Vitest (TP-05)
