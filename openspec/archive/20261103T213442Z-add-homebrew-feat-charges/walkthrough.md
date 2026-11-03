@@ -1,7 +1,7 @@
 # Walkthrough: Add Homebrew Feat Charges
 
 > **Change ID:** `add-homebrew-feat-charges`  
-> **Status:** Em Progresso (Fases 1 e 2 Concluídas)  
+> **Status:** Concluído (Fases 1, 2 e 3 Concluídas)  
 > **Data:** 2026-11-03  
 
 ---
@@ -27,8 +27,6 @@ Nesta primeira fase, implementamos as fundações do sistema de cargas para tale
 ---
 
 ## 🧪 Verificação e Resultados dos Testes — Fase 1
-
-Executada a suíte de testes unitários e a suíte completa de regressão do microsserviço:
 
 ```bash
 # 1. Testes unitários focados nas novas regras de domínio:
@@ -76,11 +74,42 @@ mvn test -f player-character-service/backend/pom.xml
 
 ---
 
-## 🎯 Contexto para a Fase 3 (Frontend UI, Diálogo de Criação, Feats Tab e Vitest)
+## 📋 Resumo da Execução — Fase 3 (Frontend UI, Diálogo de Criação, Feats Tab e Vitest)
 
-Na **Fase 3**:
-1. Atualizar interfaces TypeScript em `dungeoneer-frontend/lib/api/homebrew.ts` e `dungeoneer-frontend/lib/api/characters.ts`.
-2. Adicionar construtor interativo de cargas em `create-homebrew-dialog.tsx` (fórmula de cargas, atributo, regras independentes de descanso curto e longo).
-3. Atualizar renderização de talentos em `feats-tab.tsx` com contadores de cargas e badges de recuperação.
-4. Testes Vitest (TP-04).
-5. Preenchimento final dos arquivos delta em `openspec/changes/add-homebrew-feat-charges/specs/`.
+Na Fase 3, implementamos no frontend o construtor visual de cargas para talentos homebrew, a exibição de regras de recuperação na ficha e os testes automatizados com Vitest.
+
+### 1. Arquivos Modificados e Testes Criados
+
+| Arquivo | Camada | Modificação |
+|---|---|---|
+| [`homebrew.ts`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/lib/api/homebrew.ts) | Frontend API | Exportados tipos `ChargeType` e `ChargeRecoveryType`; campos de cargas adicionados a `MechanicalEffectsPayload`. |
+| [`encyclopedia.ts`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/lib/api/encyclopedia.ts) | Frontend API | Exportados tipos `ChargeType` e `ChargeRecoveryType`; campos de cargas adicionados a `Feat['mechanicalEffects']`. |
+| [`characters.ts`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/lib/api/characters.ts) | Frontend API | Campos de fórmula e recuperação adicionados à interface `CharacterFeat`. |
+| [`create-homebrew-dialog.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/homebrew/create-homebrew-dialog.tsx) | Frontend UI | Construtor visual de cargas com toggle, seleção de fórmula (`FIXED`, `ABILITY_MODIFIER`, `PROFICIENCY`, `LEVEL`), seletor de atributo, inputs de quantidade fixa e regras independentes de descanso curto (`NONE`, `ALL`, `FIXED`, `MODIFIER`, `PROFICIENCY`, `LEVEL`) e longo (`ALL`, `NONE`, `FIXED`, `MODIFIER`, `PROFICIENCY`, `LEVEL`). Hidratação de `editEntity` e compatibilidade legada. |
+| [`feats-tab.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/character-sheet/feats-tab.tsx) | Frontend UI | Exibição de fórmula de cargas (`Fórmula: Mod. SAB`, etc.) e badges de recuperação (`Descanso Curto: Total/+X`, `Descanso Longo: Total/+X`). |
+| [`feat-detail-modal.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/encyclopedia/feat-detail-modal.tsx) | Frontend UI | Detalhamento da fórmula e regras de recuperação no modal de mecânicas ativas. |
+| [`homebrew-creation.test.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/__tests__/homebrew-creation.test.tsx) | Frontend Vitest | Adicionados testes automatizados para TP-04 (fórmula por modificador de atributo com recuperação por descanso) e teste com cargas fixas. |
+| `specs/*.md` | Documentação | Preenchidos arquivos delta em `openspec/changes/add-homebrew-feat-charges/specs/`. |
+
+---
+
+## 🧪 Verificação e Resultados dos Testes — Fase 3
+
+```bash
+npm --prefix dungeoneer-frontend run test:unit
+# Resultado: Test Files: 19 passed, Tests: 73 passed (100% sucesso)
+```
+
+---
+
+## 🏁 Validação de Critérios de Aceite da Proposta
+
+- [x] **Dado** um talento com cargas `LEVEL`, **Quando** o personagem sobe de nível, **Então** `maxCharges` reflete o novo nível na hidratação.
+- [x] **Dado** `ABILITY_MODIFIER` com modificador ≤ 0, **Quando** o máximo é calculado, **Então** `maxCharges` é fixado em no mínimo 1.
+- [x] **Dado** recuperação no descanso curto `FIXED 1` e 0/3 cargas, **Quando** avaliada a recuperação, **Então** as cargas atuais se tornam 1.
+- [x] **Dado** recuperação que excederia o máximo, **Quando** aplicada, **Então** as cargas atuais são limitadas ao `maxCharges`.
+- [x] **Dado** recuperação no descanso longo não especificada, **Então** o padrão assumido é `ALL`.
+- [x] **Dado** `ABILITY_MODIFIER` sem `chargeAbility`, **Quando** submetido via API, **Então** o serviço rejeita com ProblemDetail 400/422.
+- [x] **Dado** um talento legado com `usesPerRest`/`restType`, **Quando** hidratado, **Então** opera normalmente via mapeamento retrocompatível.
+
+Pronto para consolidação e arquivamento via `sdd-spec-archive` ou para a execução de `add-long-short-rest`.

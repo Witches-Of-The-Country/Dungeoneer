@@ -1,7 +1,7 @@
 ---
 id: "frontend-web-app"
 title: "Dungeoneer Frontend Web App — Living Specification"
-version: "1.4.0"
+version: "1.5.0"
 status: "active"
 owners:
   - "@jaca"
@@ -139,6 +139,20 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
   - **Gating**: Blocks progression to Step 4 if an ability choice is required by a half-feat but not yet selected.
 - **Review & Submit (Step 4)**: Summarizes class level, HP increase, and chosen feat/ability increase (e.g., `Talento: Atleta (+1 em Força)`), dispatching `abilityScoreIncreases: { [chosenStat]: 1 }` alongside `selectedFeatId`.
 
+### [RF-04] Homebrew Feat Charges & Character Sheet Feats Tab
+
+- **Homebrew Charge Builder (`CreateHomebrewDialog`)**:
+  - Interactive charge section with toggle "Habilitar Sistema de Cargas e Descanso".
+  - Formula selection: `FIXED`, `ABILITY_MODIFIER` (with ability picker), `PROFICIENCY`, `LEVEL`.
+  - Independent rest recovery rules:
+    - Short rest: `NONE` (default), `ALL`, `FIXED`, `MODIFIER`, `PROFICIENCY`, `LEVEL`.
+    - Long rest: `ALL` (default), `NONE`, `FIXED`, `MODIFIER`, `PROFICIENCY`, `LEVEL`.
+  - Full edit hydration restoring existing mechanical effects and legacy fallbacks.
+- **Feats Tab & Modals (`FeatsTab`, `FeatDetailModal`)**:
+  - Live charge counter `{currentCharges} / {maxCharges}` with single-click consumption (`Zap` button).
+  - Formula badges (e.g., `Fórmula: Mod. SAB`) and rest recovery tags (e.g., `Descanso Curto: Total`, `Descanso Longo: Total`).
+  - Active mechanics breakdown in `FeatDetailModal` reflecting charges and rest recovery.
+
 ---
 
 ## Out of Scope
@@ -152,6 +166,7 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.5.0 | 2026-11-03 | @jaca | Added Homebrew Feat charge builder form, independent rest recovery selectors, and Feats tab charge/recovery indicators (`add-homebrew-feat-charges`) |
 | 1.4.0 | 2026-11-03 | @jaca | Added Level-Up Wizard half-feat ability score selection widget, validation gating, and payload dispatch (`level-up-half-feat-ability-choice`) |
 | 1.3.0 | 2026-11-02 | @jaca | Aligned encyclopedia and inventory item catalog filters with canonical categories and rarities (`008-srd-item-catalog-seed-and-category-normalization`) |
 | 1.2.0 | 2026-10-31 | @jaca | Integrated EncyclopediaMenu into post-login dashboard, added client-side role gating (`isDM`/`isPlayer`), Monsters & NPCs DM placeholders, and navbar role badge (`add-main-dashboard`) |

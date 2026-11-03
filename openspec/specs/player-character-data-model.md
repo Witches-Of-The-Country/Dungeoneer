@@ -1,7 +1,7 @@
 ---
 id: "player-character-data-model"
 title: "Player Character Data Model & Persistence — Living Specification"
-version: "1.5.0"
+version: "1.6.0"
 status: "active"
 owners:
   - "@jaca"
@@ -493,6 +493,7 @@ erDiagram
 | `ruleset` | `VARCHAR(10)` | NOT NULL |
 | `source` | `VARCHAR(10)` | NOT NULL, DEFAULT 'SRD' |
 | `owner_id` | `UUID` | NULLABLE |
+| `mechanical_effects` | `JSONB` | NULLABLE — Structured capabilities, ability bonuses, `spellChoice`, `abilityBonusChoice`, and charge configuration (`maxChargesType`, `chargeAbility`, `fixedMaxCharges`, `shortRestRecoveryType`, `shortRestRecoveryFixed`, `longRestRecoveryType`, `longRestRecoveryFixed`) |
 
 #### `lineages`
 
@@ -585,6 +586,7 @@ erDiagram
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.6.0 | 2026-11-03 | @jaca | Documented `feats.mechanical_effects` JSONB structure for feat charge and rest recovery configurations (`add-homebrew-feat-charges`) |
 | 1.5.0 | 2026-11-03 | @jaca | Seeded complete SRD 2014 and SRD 2024 General Feats, Origin Feats, structured `spellChoice` metadata, and dynamic prerequisite rules (`009-seed-complete-srd-general-and-origin-feats`) |
 | 1.4.0 | 2026-11-02 | @jaca | Normalized item categories to canonical taxonomy, seeded iconic SRD items, and aligned query filtering (`008-srd-item-catalog-seed-and-category-normalization`) |
 | 1.3.0 | 2026-10-31 | @jaca | Added character_notes table (V5), skill_proficiencies column (V6), and updated hp_rolls for multiclass support (`refactor-wizard-hp-srd-and-session`) |
