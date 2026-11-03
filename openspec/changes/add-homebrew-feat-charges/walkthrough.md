@@ -1,7 +1,7 @@
 # Walkthrough: Add Homebrew Feat Charges
 
 > **Change ID:** `add-homebrew-feat-charges`  
-> **Status:** Em Progresso (Fase 1 Concluída)  
+> **Status:** Em Progresso (Fases 1 e 2 Concluídas)  
 > **Data:** 2026-11-03  
 
 ---
@@ -26,7 +26,7 @@ Nesta primeira fase, implementamos as fundações do sistema de cargas para tale
 
 ---
 
-## 🧪 Verificação e Resultados dos Testes
+## 🧪 Verificação e Resultados dos Testes — Fase 1
 
 Executada a suíte de testes unitários e a suíte completa de regressão do microsserviço:
 
@@ -42,11 +42,45 @@ mvn test -f player-character-service/backend/pom.xml
 
 ---
 
-## 🎯 Contexto para a Fase 2 (Aplicação, Hidratação, DTOs e Integração)
+## 📋 Resumo da Execução — Fase 2 (Serviços de Aplicação, Hidratação, DTOs e Integração)
 
-Na **Fase 2**:
-1. Atualizar [`CharacterSheetHydrator.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CharacterSheetHydrator.java) para usar o `FeatChargeCalculator.calculateMaxCharges` na hidratação da ficha.
-2. Atualizar [`CreateCharacterService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CreateCharacterService.java) e [`LevelUpService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/LevelUpService.java) para inicializar cargas em talentos adquiridos.
-3. Atualizar DTOs (`CreateHomebrewFeatRequest`, `FeatDto`, `CharacterFeatDto`) com anotações Jakarta Validation e campos de configuração de cargas.
-4. Adicionar validação cruzada em [`HomebrewService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/HomebrewService.java) (ex.: exigir `chargeAbility` quando a fórmula for `ABILITY_MODIFIER`) retornando RFC 7807 400 ProblemDetail.
-5. Criar testes MockMvc e de integração (cenários TP-03, TE-03, TE-04).
+Na Fase 2, integramos o cálculo dinâmico de cargas nos fluxos de aplicação e hidratação da ficha de personagem, garantindo persistência compatível em JSONB e validações defensivas RFC 7807 na criação de talentos homebrew.
+
+### 1. Arquivos Modificados e Testes Criados
+
+| Arquivo | Camada | Modificação |
+|---|---|---|
+| [`CharacterSheetHydrator.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CharacterSheetHydrator.java) | Aplicação | Recalcula dinamicamente `maxCharges` usando `FeatChargeCalculator` e aplica clamping a `currentCharges` em cada hidratação para a lista de talentos e ações. |
+| [`CharacterFeatDto.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/dto/CharacterFeatDto.java) | Aplicação DTO | Sobrecarga de `fromDomain` recebendo `currentCharges` e `maxCharges` dinâmicos calculados pelo hydrator. |
+| [`CreateCharacterService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CreateCharacterService.java) | Aplicação | Inicializa cargas de talentos concedidos na criação via `FeatChargeCalculator.calculateMaxCharges`. |
+| [`LevelUpService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/LevelUpService.java) | Aplicação | Inicializa cargas de novos talentos (arquétipo, subclasse, linhagem e talentos bônus) via `FeatChargeCalculator.calculateMaxCharges`. |
+| [`HomebrewService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/HomebrewService.java) | Aplicação | Implementada validação defensiva cruzada `validateFeatMechanicalEffects` (exige `chargeAbility` quando a fórmula for `ABILITY_MODIFIER`, valida números fixos positivos), lançando `CharacterValidationException` (RFC 7807 ProblemDetail). |
+| [`CharacterSheetHydratorTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/application/service/CharacterSheetHydratorTest.java) | Testes Aplicação | Teste cobrindo recálculo dinâmico baseado em atributo do personagem e clamping de cargas excedentes. |
+| [`HomebrewServiceTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/application/service/HomebrewServiceTest.java) | Testes Aplicação | Testes unitários para TP-03 (criação e persistência de talento com cargas) e TE-03 (rejeição de configurações inválidas). |
+| [`HomebrewCreationControllerTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/HomebrewCreationControllerTest.java) | Testes Web MockMvc | Testes de API para TP-03 (POST 201 Created), TE-03 (enum malformado 400 Bad Request, validação 422 ProblemDetail). |
+| [`MechanicalEffectsTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/domain/model/MechanicalEffectsTest.java) | Testes Persistência | Testes para TE-04 (desserialização segura de JSON legados sem novos campos) e TP-03 (round-trip JSONB completo). |
+
+---
+
+## 🧪 Verificação e Resultados dos Testes — Fase 2
+
+```bash
+# 1. Testes direcionados da Fase 2:
+mvn test -f player-character-service/backend/pom.xml "-Dtest=CharacterSheetHydratorTest,HomebrewServiceTest,HomebrewCreationControllerTest,MechanicalEffectsTest"
+# Resultado: Tests run: 37, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
+
+# 2. Suíte de regressão completa do player-character-service (incluindo Testcontainers):
+mvn test -f player-character-service/backend/pom.xml
+# Resultado: Tests run: 262, Failures: 0, Errors: 0, Skipped: 1 — BUILD SUCCESS
+```
+
+---
+
+## 🎯 Contexto para a Fase 3 (Frontend UI, Diálogo de Criação, Feats Tab e Vitest)
+
+Na **Fase 3**:
+1. Atualizar interfaces TypeScript em `dungeoneer-frontend/lib/api/homebrew.ts` e `dungeoneer-frontend/lib/api/characters.ts`.
+2. Adicionar construtor interativo de cargas em `create-homebrew-dialog.tsx` (fórmula de cargas, atributo, regras independentes de descanso curto e longo).
+3. Atualizar renderização de talentos em `feats-tab.tsx` com contadores de cargas e badges de recuperação.
+4. Testes Vitest (TP-04).
+5. Preenchimento final dos arquivos delta em `openspec/changes/add-homebrew-feat-charges/specs/`.
