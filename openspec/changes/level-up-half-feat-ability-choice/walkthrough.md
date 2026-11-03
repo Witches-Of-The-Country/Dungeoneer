@@ -25,8 +25,37 @@
 
 ### 3. Contexto de Transição para a Fase 2
 - A Fase 1 está 100% concluída e testada.
-- **Próximos Passos (Fase 2)**: Interface no Frontend (`LevelUpWizardModal`):
-  - Inspecionar `selectedFeat.mechanicalEffects.abilityBonusChoice` ao selecionar um talento no Passo 3.
-  - Renderizar os botões/chips de seleção interativa para os atributos permitidos (`allowedAbilities`) com projeção de pontuação atual e futura.
-  - Bloquear o botão "Avançar" no Passo 3 caso o atributo de um half-feat não tenha sido selecionado.
-  - Exibir o bônus escolhido no resumo do Passo 4 e despachar `abilityScoreIncreases` no payload de submissão.
+
+---
+
+## Fase 2: Interface no Frontend (LevelUpWizardModal) e Testes de Unidade
+
+### 1. Arquivos Modificados
+- `dungeoneer-frontend/lib/api/encyclopedia.ts`:
+  - Enriquecida a tipagem TypeScript para `Feat` e `MechanicalEffects`, adicionando suporte tipado a `AbilityBonusChoice`, `prerequisiteRules` e `spellChoice`.
+- `dungeoneer-frontend/components/character-sheet/level-up-wizard-modal.tsx`:
+  - Adicionado `halfFeatChoiceConfig` derivado do talento selecionado no Passo 3.
+  - Implementado sub-painel interativo `"Bônus de Atributo do Talento (+1)"` exibindo chips/botões seletores para os atributos permitidos (`allowedAbilities`), com cálculo da pontuação atual e projetada (+1, limitado ao teto de 20).
+  - Bloqueio no botão "Avançar" (`handleAdvanceStep`) caso o jogador selecione um half-feat sem escolher o atributo a ser incrementado, exibindo toast explicativo.
+  - Atualização do resumo do Passo 4 com o nome do talento e o atributo selecionado (ex: `Talento: Atleta (+1 em Força)`).
+  - Inclusão do atributo escolhido no payload da mutação `levelUpMutation.mutate` como `abilityScoreIncreases: { [chosenStat]: 1 }`.
+- `dungeoneer-frontend/__tests__/level-up-wizard.test.tsx`:
+  - Adicionado mock de talento half-feat (*Atleta*, com `abilityBonusChoice` permitindo `STR` ou `DEX`).
+  - Adicionado novo teste de unidade cobrindo:
+    1. Renderização do seletor de atributos ao clicar no card de um half-feat;
+    2. Bloqueio de avanço para o Passo 4 sem seleção de atributo;
+    3. Seleção de Força (+1 Força: 15 → 16);
+    4. Exibição correta no resumo final;
+    5. Confirmação do envio de `abilityScoreIncreases: { STR: 1 }` na mutação `useLevelUp`.
+
+### 2. Resultados de Verificação e Testes
+- **Comando Executado**: `npm --prefix dungeoneer-frontend run test:unit`
+- **Resultado**: `19 passed (19 test files)`, `71 passed (71 tests)` (28.95s).
+
+### 3. Contexto de Transição para a Fase 3
+- A Fase 2 está 100% concluída e testada.
+- **Próximos Passos (Fase 3)**: Verificação & Integração Ponta a Ponta:
+  - Execução da suíte completa de testes backend (`mvn test`).
+  - Execução de build de produção do frontend (`npm run build`).
+  - Rebuild e reinício do contêiner Docker `player-character-service`.
+  - Validação funcional ao vivo e encerramento/arquivamento da spec.

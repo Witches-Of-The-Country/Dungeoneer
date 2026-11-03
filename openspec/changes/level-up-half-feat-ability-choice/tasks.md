@@ -14,10 +14,10 @@
 - [x] 1.3 Add backend unit/integration tests verifying half-feat ability bonus application and validation.
 
 ## Phase 2: Frontend Level Up Wizard UI & State
-- [ ] 2.1 Update `LevelUpWizardModal` to detect if the selected feat is a half-feat (`abilityBonusChoice` or `abilityBonuses`).
-- [ ] 2.2 Render an interactive ability score selector when a half-feat is selected, restricted to `allowedAbilities`.
-- [ ] 2.3 Pass the selected ability bonus into the level-up mutation payload.
-- [ ] 2.4 Update frontend unit tests in `level-up-wizard.test.tsx` verifying half-feat ability selection rendering, validation, and payload submission.
+- [x] 2.1 Update `LevelUpWizardModal` to detect if the selected feat is a half-feat (`abilityBonusChoice` or `abilityBonuses`).
+- [x] 2.2 Render an interactive ability score selector when a half-feat is selected, restricted to `allowedAbilities`.
+- [x] 2.3 Pass the selected ability bonus into the level-up mutation payload.
+- [x] 2.4 Update frontend unit tests in `level-up-wizard.test.tsx` verifying half-feat ability selection rendering, validation, and payload submission.
 
 ## Phase 3: Verification & Integration
 - [ ] 3.1 Run backend tests (`mvn test -f player-character-service/backend/pom.xml`).
