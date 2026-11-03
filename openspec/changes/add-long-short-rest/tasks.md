@@ -10,8 +10,8 @@
 
 ## Implementation Tasks
 
-- [ ] Flyway `V27` (exhaustion, hit_dice_spent) + JPA mappings
-- [ ] Domain: `PlayerCharacter.exhaustion`, `ClassProgression` Hit Dice methods
+- [x] Flyway `V27` (exhaustion, hit_dice_spent) + JPA mappings
+- [x] Domain: `PlayerCharacter.exhaustion`, `ClassProgression` Hit Dice methods
 - [ ] `RulesEngine` rest methods + 2014/2024 implementations
 - [ ] Rewrite `RestService` (short/long, temp HP fix, no-resurrection guard)
 - [ ] Update `RestCommand`, `RestUseCase`, controller, sheet DTOs
