@@ -36,4 +36,23 @@
 
 ### 3. Contexto de Transição para a Fase 3
 - A Fase 2 está 100% concluída e testada.
-- **Próximos Passos (Fase 3)**: Alinhamento dos filtros do catálogo e loja no frontend (`dungeoneer-frontend`), validação das abas de categorias e raridades na enciclopédia e modal de inventário, e verificação dos testes (`npm run test:unit`) e compilação (`npm run build`).
+
+---
+
+## Fase 3: Alinhamento dos Filtros de Catálogo & Loja no Frontend
+
+### 1. Arquivos Envolvidos
+- `dungeoneer-frontend/app/encyclopedia/items/page.tsx`
+  - Filtros multi-seleção de categorias canônicas (`WEAPON`, `ARMOR`, `POTION`, `RING`, `ROD`, `SCROLL`, `STAFF`, `WAND`, `WONDROUS`, `ADVENTURING_GEAR`) e de raridades canônicas em caixa alta (`COMMON`, `UNCOMMON`, `RARE`, `VERY_RARE`, `LEGENDARY`, `ARTIFACT`) com rótulos localizados em pt-BR.
+- `dungeoneer-frontend/components/character-sheet/item-catalog-modal.tsx`
+  - Seletor de categorias canônicas com ícones temáticos e busca combinada contra regras de regraset (`SRD_2014`, `SRD_2024`, `HOMEBREW`), cálculo preciso de custos em moedas de cobre para compra e suporte a adição direta no inventário.
+
+### 2. Resultados de Verificação e Testes
+- **Comando Executado (Testes Unitários)**: `npm --prefix dungeoneer-frontend run test:unit`
+  - **Resultado**: `19 passed (19)`, `70 passed (70)`, tempo de execução 22.00s.
+- **Comando Executado (Build de Produção & TypeScript)**: `npm --prefix dungeoneer-frontend run build`
+  - **Resultado**: Compilação Turbopack concluída com sucesso, TypeScript 100% validado, 17/17 rotas estáticas e dinâmicas geradas.
+
+### 3. Contexto de Transição para a Fase 4
+- A Fase 3 está 100% concluída e validada sem erros ou regressões.
+- **Próximos Passos (Fase 4)**: Rebuild dos containers via Docker Compose (`docker --context default compose up -d --build player-character-service`), verificação de queries ao vivo e teste end-to-end do modal de detalhes do item.
