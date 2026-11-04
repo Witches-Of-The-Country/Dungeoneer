@@ -2,7 +2,7 @@
 
 > **Change ID:** `add-long-short-rest`
 > **Linked Proposal:** [proposal.md](./proposal.md)
-> **Status:** in-progress
+> **Status:** complete
 >
 > All tasks must be `[x]` before this change can be archived via `sdd-spec-archive`.
 
@@ -15,22 +15,22 @@
 - [x] `RulesEngine` rest methods + 2014/2024 implementations
 - [x] Rewrite `RestService` (short/long, temp HP fix, no-resurrection guard)
 - [x] Update `RestCommand`, `RestUseCase`, controller, sheet DTOs
-- [ ] Frontend: API types, header buttons, `rest-modal.tsx`, Hit Dice counter, exhaustion badge
+- [x] Frontend: API types, header buttons, `rest-modal.tsx`, Hit Dice counter, exhaustion badge
 
 ## Test Tasks
 
 - [x] Unit tests (TP-01/02, TE-01/03/05/06/07)
 - [x] MockMvc tests (TP-03, TE-02/03/04)
 - [x] Testcontainers integration (TP-04)
-- [ ] Vitest (TP-05)
+- [x] Vitest (TP-05)
 
 ## Documentation Tasks
 
-- [ ] Fill delta specs (domain, data-model, frontend)
+- [x] Fill delta specs (domain, data-model, frontend)
 
 ## Review Gate
 
-- [ ] All implementation tasks complete
-- [ ] All tests passing
-- [ ] Proposal acceptance criteria verified
-- [ ] Ready for `sdd-spec-archive`
+- [x] All implementation tasks complete
+- [x] All tests passing
+- [x] Proposal acceptance criteria verified
+- [x] Ready for `sdd-spec-archive`

@@ -1,7 +1,7 @@
 # Walkthrough: Add Long & Short Rest Mechanics
 
 > **Change ID:** `add-long-short-rest`  
-> **Status:** Em Progresso (Fases 1, 2 e 3 Concluídas)  
+> **Status:** Em Progresso (Fases 1, 2, 3 e 4 Concluídas)  
 > **Data:** 2026-11-03  
 
 ---
@@ -59,41 +59,47 @@ Na Fase 3, expusemos os novos campos de exaustão e resumo de Dados de Vida na A
 | [`CharacterSheetHydrator.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CharacterSheetHydrator.java) | Aplicação (Serviço) | Hidratação de `classProgressionId`, `hitDie`, `hitDiceSpent`, `availableHitDice` e `exhaustion` no resultado da ficha. |
 | [`CharacterQueryService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CharacterQueryService.java) | Aplicação (Serviço) | Hidratação completa de `CharacterClassSummaryDto` na listagem de personagens. |
 | [`PlayerCharacterPersistenceAdapter.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/PlayerCharacterPersistenceAdapter.java) | Persistência | Correção de salvamento de `ability_scores` preservando ID em updates de personagem. |
-| [`PlayerCharacterControllerTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/PlayerCharacterControllerTest.java) | Testes Web (MockMvc) | 4 testes cobrindo `POST /{id}/rest` com sucesso (TP-03), sobregasto de dados de vida retornando 400 (TE-02), tentativa de descanso em personagem morto retornando 422 (TE-03) e progressão inexistente retornando 400 (TE-04). |
+| [`PlayerCharacterControllerTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/PlayerCharacterControllerTest.java) | Testes Web (MockMvc) | 4 testes cobrindo `POST /{id}/rest` com sucesso (TP-03), sobregasto de dados de vida com 400 (TE-02), tentativa de descanso em personagem morto com 422 (TE-03) e progressão inexistente com 400 (TE-04). |
 | [`PlayerCharacterPersistenceAdapterTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/out/persistence/PlayerCharacterPersistenceAdapterTest.java) | Testes de Integração (Testcontainers) | Teste TP-04 validando persistência real em PostgreSQL de `characters.exhaustion` e `class_progressions.hit_dice_spent` através de um ciclo de descanso. |
-| [`tasks.md`](file:///D:/Projects/Dungeoneer/openspec/changes/add-long-short-rest/tasks.md) | Documentação | Atualizadas tarefas da Fase 3 como concluídas `[x]`. |
 
 ---
 
-## 🧪 Verificação e Resultados dos Testes — Fase 3
+## 📋 Resumo da Execução — Fase 4 (Frontend UI/UX & Vitest)
+
+Na Fase 4, integramos a interface de usuário do Dungeoneer com o sistema de descanso, criando o modal de descanso (`RestModal`), botões de ação e contadores visuais de Dados de Vida e Exaustão.
+
+### Arquivos Criados e Modificados na Fase 4
+
+| Arquivo | Camada | Modificação |
+|---|---|---|
+| [`characters.ts`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/lib/api/characters.ts) | Frontend (API & Tipos) | Adicionados `RestType`, `HitDiceSpendItem`, `RestPayload`, `takeRest`, `useTakeRest`, e campos `exhaustion`, `hitDie`, `hitDiceSpent` e `availableHitDice`. |
+| [`package.json`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/package.json) | Frontend (Config) | Adicionado script `"test": "vitest run"` para facilitar execução padrão dos testes. |
+| [`rest-modal.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/character-sheet/rest-modal.tsx) | Frontend (Componente) | Modal responsivo em Dark Fantasy RPG com abas "Descanso Curto (1 hora)" e "Descanso Longo (8 horas)", prévia de modificador de Constituição, stepper por classe respeitando limites, checklist de benefícios do descanso longo, barreira para 0 PV (inconsciente/morto) e integração com TanStack Query. |
+| [`page.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/app/characters/[id]/page.tsx) | Frontend (Página da Ficha) | Botões "Descanso Curto" e "Descanso Longo" no cabeçalho de ações; contador dinâmico de Dados de Vida disponíveis/totais e por classe em Estatísticas de Combate; badge de Exaustão exibido em destaque quando `exhaustion > 0`. |
+| [`rest-modal.test.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/__tests__/rest-modal.test.tsx) | Frontend (Testes Vitest) | 4 testes unitários cobrindo renderização, alocação de dados de vida e envio de payload em descanso curto, checklist e envio em descanso longo, e bloqueio de descanso a 0 PV (TP-05). |
+
+---
+
+## 🧪 Verificação e Resultados dos Testes — Fase 4
 
 ```bash
-# Execução dos testes MockMvc do controlador:
-mvn test -f player-character-service/backend/pom.xml "-Dtest=PlayerCharacterControllerTest"
-# Resultado: Tests run: 20, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
+# Execução dos testes unitários do RestModal:
+cd dungeoneer-frontend && npm test __tests__/rest-modal.test.tsx
+# Resultado: Tests: 4 passed (4) — Duração: 4.89s
 
-# Execução do teste de integração com PostgreSQL real (Testcontainers):
-mvn test -f player-character-service/backend/pom.xml "-Dtest=PlayerCharacterPersistenceAdapterTest"
-# Resultado: Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
-
-# Execução da suíte completa de testes do backend:
-mvn clean test -f player-character-service/backend/pom.xml
-# Resultado: Tests run: 287, Failures: 0, Errors: 0, Skipped: 1 — BUILD SUCCESS
+# Execução da suíte completa de testes do frontend:
+cd dungeoneer-frontend && npm test
+# Resultado: Test Files: 20 passed (20), Tests: 77 passed (77) — Duração: 28.52s
 ```
 
 ---
 
-## 🎯 Contexto para a Fase 4 (Frontend UI/UX & Vitest)
+## 🎯 Contexto para a Fase 5 (Delta Specs & Archival via sdd-spec-archive)
 
-Na **Fase 4**:
-1. Atualizar tipos no frontend ([`dungeoneer-frontend/lib/api/characters.ts`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/lib/api/characters.ts)): adicionar `exhaustion`, `hitDie`, `hitDiceSpent`, `availableHitDice` em `CharacterClassSummary` e `RestPayload`.
-2. Criar o componente de modal de descanso ([`dungeoneer-frontend/components/character-sheet/rest-modal.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/character-sheet/rest-modal.tsx)):
-   - Seleção entre Descanso Curto e Descanso Longo.
-   - Para Descanso Curto: seletores de Dados de Vida a gastar por classe (respeitando disponíveis), exibindo bônus de CON e estimativa.
-   - Para Descanso Longo: confirmação detalhando recuperação total de PV, recuperação de metade dos dados de vida e redução de 1 de exaustão.
-   - Validações: desabilitar botões se HP <= 0 ("Personagem Inconsciente / Morto").
-3. Integrar na página da ficha ([`dungeoneer-frontend/app/characters/[id]/page.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/app/characters/[id]/page.tsx)):
-   - Botões de "Descanso Curto" e "Descanso Longo" no cabeçalho/painel de status.
-   - Contador de Dados de Vida disponíveis / totais na barra de status de combate.
-   - Badge visual de Exaustão quando `exhaustion > 0`.
-4. Implementar testes unitários Vitest (TP-05).
+Na **Fase 5**:
+1. Preencher as especificações delta em `openspec/changes/add-long-short-rest/specs/`:
+   - `player-character-domain-delta.md`
+   - `player-character-data-model-delta.md`
+   - `frontend-web-app-delta.md`
+2. Validar que todas as tarefas em `tasks.md` estão marcadas como concluídas `[x]`.
+3. Executar o fluxo de consolidação e arquivamento via `sdd-spec-archive` para mover a especificação para `openspec/archive/` e atualizar as living specs canônicas.

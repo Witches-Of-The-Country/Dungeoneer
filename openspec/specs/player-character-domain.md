@@ -1,7 +1,7 @@
 ---
 id: "player-character-domain"
 title: "Player Character Domain & API — Living Specification"
-version: "1.5.0"
+version: "1.6.0"
 status: "active"
 owners:
   - "@jaca"
@@ -337,6 +337,7 @@ All `/api/characters/**` endpoints require the `X-User-Id` header (`UUID`) and e
 | `GET` | `/api/characters/{id}` | Get full hydrated character sheet by ID (returns 404 if not owned) |
 | `PUT` | `/api/characters/{id}` | Update mutable sheet fields (`name`, `hitPointsCurrent`, `hitPointsTemp`, `notes`) |
 | `DELETE` | `/api/characters/{id}` | Delete character owned by `X-User-Id` (`204 No Content`) |
+| `POST` | `/api/characters/{id}/rest` | Execute a Short or Long Rest (`{ restType, hitDiceSpends }`) |
 | `POST` | `/api/characters/{id}/level-up` | Level up a character (deferred) |
 | `POST` | `/api/characters/{id}/multiclass` | Add a new class to a character (deferred) |
 
@@ -384,6 +385,7 @@ All `/api/characters/**` endpoints require the `X-User-Id` header (`UUID`) and e
 |-----------------|-------------|---------|
 | `CharacterNotFoundException` | `404 Not Found` | Character ID doesn't exist or belongs to another user (IDOR) |
 | `CharacterValidationException` | `422 Unprocessable Entity` | Point Buy != 27 points or invalid background ASI distribution |
+| `RestValidationException` | `400 Bad Request` | Invalid rest payload (e.g. dead character, spending unowned hit dice, spending hit dice on long rest) |
 | `InvalidRollTokenException` | `422 Unprocessable Entity` | Roll token doesn't match user or archetype |
 | `RollConflictException` | `409 Conflict` | Attempted reuse of already consumed roll token |
 | `MissingRequestHeaderException` | `401 Unauthorized` | Missing required `X-User-Id` authorization header |
@@ -412,6 +414,12 @@ Capabilities granted by Feats are structured via immutable domain records in `do
   - `CharacterFeat.recoverCharges` applies independent recovery per rest type (defaulting to `ALL` on long rest and `NONE` on short rest), strictly bounded between 0 and `maxCharges`.
   - Legacy feats using `usesPerRest` and `restType` are seamlessly resolved at read-time via backwards-compatible fallback mapping.
 
+- **Rest Mechanics & RulesEngine Delegation (`RestService`)**:
+  - Invariant: characters at 0 HP or dead cannot rest (`RestValidationException`).
+  - **Short Rest**: Characters may spend available Hit Dice by class progression. The server rolls each die + character CON modifier (minimum 0 per die), restoring current HP up to max HP. Temporary HP is preserved. Short-rest feat charges are recovered.
+  - **Long Rest**: Character restores full current HP. Temporary HP is preserved. Character recovers half of total Hit Dice across all class progressions (minimum 1), all spell slots, all long-rest feat charges, and decreases exhaustion by 1 (minimum 0). Hit dice cannot be spent during a long rest.
+  - Mechanics are resolved via `RulesEngine` strategy (`SRD_2014RulesEngine` / `Srd2024RulesEngine`).
+
 Example `ProblemDetail` payload:
 ```json
 {
@@ -438,6 +446,7 @@ Example `ProblemDetail` payload:
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.6.0 | 2026-11-03 | @jaca | Implemented Short and Long Rest mechanics, Hit Dice spending and recovery, exhaustion decrement, and 0 HP rest guard (`add-long-short-rest`) |
 | 1.5.0 | 2026-11-03 | @jaca | Added configurable feat charge formulas (`ChargeType`), independent rest recovery rules (`ChargeRecoveryType`), dynamic hydration recalculation, and legacy fallback (`add-homebrew-feat-charges`) |
 | 1.4.0 | 2026-11-03 | @jaca | Added validation and application of half-feat ability choices (`abilityBonusChoice`) during level-up (`level-up-half-feat-ability-choice`) |
 | 1.3.0 | 2026-11-03 | @jaca | Added `SpellChoice` record, full `MechanicalEffects` Jackson mapping, and dynamic prerequisite evaluation for SRD General and Origin Feats (`009-seed-complete-srd-general-and-origin-feats`) |

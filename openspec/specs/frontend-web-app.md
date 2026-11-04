@@ -1,7 +1,7 @@
 ---
 id: "frontend-web-app"
 title: "Dungeoneer Frontend Web App — Living Specification"
-version: "1.5.0"
+version: "1.6.0"
 status: "active"
 owners:
   - "@jaca"
@@ -153,6 +153,22 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
   - Formula badges (e.g., `Fórmula: Mod. SAB`) and rest recovery tags (e.g., `Descanso Curto: Total`, `Descanso Longo: Total`).
   - Active mechanics breakdown in `FeatDetailModal` reflecting charges and rest recovery.
 
+### [RF-05] Rest System Modal & Sheet Controls (`RestModal`)
+
+- **Sheet Header Controls**:
+  - "Descanso Curto" and "Descanso Longo" action buttons in the character sheet header.
+  - Multi-class Hit Dice counters displaying `{availableHitDice}/{classLevel} ({hitDie})`.
+  - Conditional exhaustion badge rendered when `exhaustion > 0` (e.g., `Exaustão: 2`).
+- **Rest Modal (`RestModal`)**:
+  - Mode selector toggling between Short Rest and Long Rest.
+  - Guard: blocks rest submission if the character is unconscious or dead (`hitPointsCurrent === 0`).
+  - **Short Rest Mode**:
+    - Stepper inputs per class progression to choose number of Hit Dice to spend (`0` to `availableHitDice`).
+    - Visual feedback showing the character's CON modifier added per die rolled.
+  - **Long Rest Mode**:
+    - Explanatory confirmation screen detailing recovery of all HP, half total Hit Dice, spell slots, long-rest feat charges, and reduction of 1 exhaustion level.
+  - Integrated with `useTakeRest` mutation (`POST /api/characters/{id}/rest`), automatically invalidating the character sheet cache on success and displaying RFC 7807 toast alerts on error.
+
 ---
 
 ## Out of Scope
@@ -166,6 +182,7 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.6.0 | 2026-11-03 | @jaca | Added RestModal, header rest buttons, multi-class Hit Dice counters, and exhaustion badge (`add-long-short-rest`) |
 | 1.5.0 | 2026-11-03 | @jaca | Added Homebrew Feat charge builder form, independent rest recovery selectors, and Feats tab charge/recovery indicators (`add-homebrew-feat-charges`) |
 | 1.4.0 | 2026-11-03 | @jaca | Added Level-Up Wizard half-feat ability score selection widget, validation gating, and payload dispatch (`level-up-half-feat-ability-choice`) |
 | 1.3.0 | 2026-11-02 | @jaca | Aligned encyclopedia and inventory item catalog filters with canonical categories and rarities (`008-srd-item-catalog-seed-and-category-normalization`) |
