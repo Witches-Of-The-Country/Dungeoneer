@@ -1,0 +1,2 @@
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:9090/api/reference/feats. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 403. 
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:9090/api/reference/lineages. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 403. 
