@@ -1,7 +1,7 @@
 ---
 id: "player-character-data-model"
 title: "Player Character Data Model & Persistence — Living Specification"
-version: "1.3.0"
+version: "1.7.0"
 status: "active"
 owners:
   - "@jaca"
@@ -78,6 +78,7 @@ erDiagram
         int hit_points_current
         int hit_points_max
         int hit_points_temp
+        int exhaustion
         int armor_class
         int initiative_bonus
         int speed
@@ -131,6 +132,7 @@ erDiagram
         uuid archetype_id FK
         uuid subclass_id FK "nullable"
         int class_level
+        int hit_dice_spent
     }
 
     archetypes {
@@ -288,6 +290,7 @@ erDiagram
 | `hit_points_current` | `INT` | NOT NULL | |
 | `hit_points_max` | `INT` | NOT NULL | |
 | `hit_points_temp` | `INT` | NOT NULL, DEFAULT 0 | |
+| `exhaustion` | `INT` | NOT NULL, DEFAULT 0, CHECK (exhaustion >= 0 AND exhaustion <= 6) | D&D exhaustion level (0-6) |
 | `armor_class` | `INT` | NOT NULL, DEFAULT 10 | |
 | `initiative_bonus` | `INT` | NOT NULL, DEFAULT 0 | |
 | `speed` | `INT` | NOT NULL, DEFAULT 30 | In feet |
@@ -329,6 +332,7 @@ erDiagram
 | `archetype_id` | `UUID` | FK → archetypes.id, NOT NULL |
 | `subclass_id` | `UUID` | FK → subclasses.id, NULLABLE |
 | `class_level` | `INT` | NOT NULL, CHECK (1-20) |
+| `hit_dice_spent` | `INT` | NOT NULL, DEFAULT 0, CHECK (hit_dice_spent >= 0) |
 | `created_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT NOW() |
 | `updated_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT NOW() |
 | UNIQUE | | (`character_id`, `archetype_id`) |
@@ -493,6 +497,7 @@ erDiagram
 | `ruleset` | `VARCHAR(10)` | NOT NULL |
 | `source` | `VARCHAR(10)` | NOT NULL, DEFAULT 'SRD' |
 | `owner_id` | `UUID` | NULLABLE |
+| `mechanical_effects` | `JSONB` | NULLABLE — Structured capabilities, ability bonuses, `spellChoice`, `abilityBonusChoice`, and charge configuration (`maxChargesType`, `chargeAbility`, `fixedMaxCharges`, `shortRestRecoveryType`, `shortRestRecoveryFixed`, `longRestRecoveryType`, `longRestRecoveryFixed`) |
 
 #### `lineages`
 
@@ -542,14 +547,20 @@ erDiagram
 |--------|------|-------------|
 | `id` | `UUID` | PK |
 | `name` | `VARCHAR(100)` | NOT NULL |
+| `name_en` | `VARCHAR(100)` | NULLABLE |
+| `slug` | `VARCHAR(120)` | NOT NULL |
 | `description` | `TEXT` | |
-| `weight` | `DECIMAL(6,2)` | NOT NULL, DEFAULT 0 |
-| `item_type` | `VARCHAR(20)` | NOT NULL (WEAPON, ARMOR, POTION, WONDROUS, etc.) |
-| `rarity` | `VARCHAR(15)` | COMMON, UNCOMMON, RARE, VERY_RARE, LEGENDARY |
-| `requires_attunement` | `BOOLEAN` | NOT NULL, DEFAULT false |
+| `cost` | `VARCHAR(20)` | NULLABLE |
+| `weight` | `VARCHAR(20)` | NOT NULL, DEFAULT '—' |
+| `item_category` | `VARCHAR(30)` | NOT NULL (WEAPON, ARMOR, POTION, WONDROUS, RING, SCROLL, WAND, ROD, STAFF, EQUIPMENT) |
+| `item_type` | `VARCHAR(50)` | NOT NULL (Poção, Item Maravilhoso, Arma, etc.) |
+| `rarity` | `VARCHAR(20)` | COMMON, UNCOMMON, RARE, VERY_RARE, LEGENDARY, ARTIFACT |
+| `attunement` | `BOOLEAN` | NOT NULL, DEFAULT false |
+| `mechanical_properties` | `JSONB` | NULLABLE |
 | `ruleset` | `VARCHAR(10)` | NOT NULL |
 | `source` | `VARCHAR(10)` | NOT NULL, DEFAULT 'SRD' |
 | `owner_id` | `UUID` | NULLABLE |
+| UNIQUE | | (`ruleset`, `slug`) |
 
 ---
 
@@ -563,6 +574,10 @@ erDiagram
 | V4 | `V4__add_character_crud_and_roll_tables.sql` | Add character CRUD fields, class progressions, ability rolls, and hp rolls with single-chance indexes |
 | V5 | `V5__add_character_notes_table.sql` | Add persistent character notes table with cascade deletion |
 | V6 | `V6__add_skill_proficiencies_to_characters.sql` | Add skill_proficiencies VARCHAR[] column to characters |
+| V24 | `V24__normalize_srd_item_categories_and_seed_catalog.sql` | Normalize item categories from MAGIC to canonical categories (POTION, WONDROUS, RING, SCROLL, etc.) and seed iconic SRD catalog items |
+| V25 | `V25__seed_complete_srd_classes_and_subclasses_progression_feats.sql` | Complete 1-20 class progression features and subclass archetypes for all SRD classes |
+| V26 | `V26__seed_complete_srd_general_and_origin_feats.sql` | Complete catalog of SRD 2014 & SRD 2024 General Feats, Origin Feats with `spellChoice`, and prerequisite metadata |
+| V27 | `V27__add_exhaustion_and_hit_dice_tracking.sql` | Add `exhaustion` (0-6) to `characters` and `hit_dice_spent` (>=0) to `class_progressions` |
 
 ---
 
@@ -576,6 +591,10 @@ erDiagram
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.7.0 | 2026-11-03 | @jaca | Added `exhaustion` tracking to `characters` and `hit_dice_spent` tracking to `class_progressions` (V27 migration) (`add-long-short-rest`) |
+| 1.6.0 | 2026-11-03 | @jaca | Documented `feats.mechanical_effects` JSONB structure for feat charge and rest recovery configurations (`add-homebrew-feat-charges`) |
+| 1.5.0 | 2026-11-03 | @jaca | Seeded complete SRD 2014 and SRD 2024 General Feats, Origin Feats, structured `spellChoice` metadata, and dynamic prerequisite rules (`009-seed-complete-srd-general-and-origin-feats`) |
+| 1.4.0 | 2026-11-02 | @jaca | Normalized item categories to canonical taxonomy, seeded iconic SRD items, and aligned query filtering (`008-srd-item-catalog-seed-and-category-normalization`) |
 | 1.3.0 | 2026-10-31 | @jaca | Added character_notes table (V5), skill_proficiencies column (V6), and updated hp_rolls for multiclass support (`refactor-wizard-hp-srd-and-session`) |
 | 1.2.0 | 2026-10-30 | @jaca | Added character CRUD metadata, notes, single-chance ability_rolls and hp_rolls, and class_progressions (character-crud-backend) |
 | 1.1.0 | 2026-10-30 | @jaca | Aligned schema to player_character, added V2/V3 reference tables with dual ruleset unique constraints, ASI JSONB/arrays, and origin feat metadata (reference-data-backend) |

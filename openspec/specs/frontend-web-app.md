@@ -1,7 +1,7 @@
 ---
 id: "frontend-web-app"
 title: "Dungeoneer Frontend Web App — Living Specification"
-version: "1.2.0"
+version: "1.6.0"
 status: "active"
 owners:
   - "@jaca"
@@ -73,7 +73,7 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
 | **Ability Scores** | 6 stats in 2×3 grid with PT-BR labels (`Força`, `Destreza`, etc.). Score + modifier + saving throw dot | Click to roll ability check |
 | **Actions & Attacks** | Weapon attacks and cantrips. To-hit bonus, damage formula | Click to roll attack/damage |
 | **Spellcasting** | Spell slot tracker (pip-style), spell list by level, prepared/known filter | Click slots to use/recover, click spell to roll |
-| **Inventory** | Item list, weight tracker, attunement slots (3 max) | Equip/unequip, add/remove items |
+| **Inventory** | Item list, weight tracker, attunement slots (3 max), Item Catalog & Store modal with canonical category tabs (WEAPON, ARMOR, POTION, WONDROUS, RING, SCROLL, WAND, ROD, STAFF, EQUIPMENT) and copper coin purchasing logic | Equip/unequip, add/remove items, browse store |
 | **Features & Feats** | Active feats grouped by source (class, lineage, background, item) | Collapsible sections |
 | **Skills** | All 18 skills with PT-BR names, proficiency/expertise dots, total modifier | Click to roll skill check |
 | **Notes** | Persistent character notes list | Create new note, inline editing mode (pencil icon -> editable title & body -> Save/Cancel) and delete modal |
@@ -129,6 +129,46 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
 | `≥768px` (`md`) | 2-column card grid, collapsed sidebar |
 | `<768px` (`sm`) | Single-column stack, bottom nav |
 
+### [RF-03] Level-Up Wizard Modal (`LevelUpWizardModal`)
+
+- **Class & Subclass (Step 1)**: Allows existing class advancement or unrestricted multiclass leveling with subclass gating.
+- **Hit Points (Step 2)**: Locked to character's career HP method (`MAX`, `AVERAGE`, `ROLLED` with server-authority single-chance token).
+- **ASI vs Feat (Step 3)**: Unlocked at ASI levels. When "Talento" is chosen:
+  - Renders rich feat catalog search and filter chips (`ALL`, `ORIGIN`, `GENERAL`, `HOMEBREW`).
+  - **Half-Feat Support**: Automatically detects `mechanicalEffects.abilityBonusChoice`. Renders an interactive sub-panel ("Bônus de Atributo do Talento (+1)") with selectable chips for allowed abilities (`allowedAbilities`), displaying current and projected ability scores (+1, capped at 20).
+  - **Gating**: Blocks progression to Step 4 if an ability choice is required by a half-feat but not yet selected.
+- **Review & Submit (Step 4)**: Summarizes class level, HP increase, and chosen feat/ability increase (e.g., `Talento: Atleta (+1 em Força)`), dispatching `abilityScoreIncreases: { [chosenStat]: 1 }` alongside `selectedFeatId`.
+
+### [RF-04] Homebrew Feat Charges & Character Sheet Feats Tab
+
+- **Homebrew Charge Builder (`CreateHomebrewDialog`)**:
+  - Interactive charge section with toggle "Habilitar Sistema de Cargas e Descanso".
+  - Formula selection: `FIXED`, `ABILITY_MODIFIER` (with ability picker), `PROFICIENCY`, `LEVEL`.
+  - Independent rest recovery rules:
+    - Short rest: `NONE` (default), `ALL`, `FIXED`, `MODIFIER`, `PROFICIENCY`, `LEVEL`.
+    - Long rest: `ALL` (default), `NONE`, `FIXED`, `MODIFIER`, `PROFICIENCY`, `LEVEL`.
+  - Full edit hydration restoring existing mechanical effects and legacy fallbacks.
+- **Feats Tab & Modals (`FeatsTab`, `FeatDetailModal`)**:
+  - Live charge counter `{currentCharges} / {maxCharges}` with single-click consumption (`Zap` button).
+  - Formula badges (e.g., `Fórmula: Mod. SAB`) and rest recovery tags (e.g., `Descanso Curto: Total`, `Descanso Longo: Total`).
+  - Active mechanics breakdown in `FeatDetailModal` reflecting charges and rest recovery.
+
+### [RF-05] Rest System Modal & Sheet Controls (`RestModal`)
+
+- **Sheet Header Controls**:
+  - "Descanso Curto" and "Descanso Longo" action buttons in the character sheet header.
+  - Multi-class Hit Dice counters displaying `{availableHitDice}/{classLevel} ({hitDie})`.
+  - Conditional exhaustion badge rendered when `exhaustion > 0` (e.g., `Exaustão: 2`).
+- **Rest Modal (`RestModal`)**:
+  - Mode selector toggling between Short Rest and Long Rest.
+  - Guard: blocks rest submission if the character is unconscious or dead (`hitPointsCurrent === 0`).
+  - **Short Rest Mode**:
+    - Stepper inputs per class progression to choose number of Hit Dice to spend (`0` to `availableHitDice`).
+    - Visual feedback showing the character's CON modifier added per die rolled.
+  - **Long Rest Mode**:
+    - Explanatory confirmation screen detailing recovery of all HP, half total Hit Dice, spell slots, long-rest feat charges, and reduction of 1 exhaustion level.
+  - Integrated with `useTakeRest` mutation (`POST /api/characters/{id}/rest`), automatically invalidating the character sheet cache on success and displaying RFC 7807 toast alerts on error.
+
 ---
 
 ## Out of Scope
@@ -142,6 +182,10 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.6.0 | 2026-11-03 | @jaca | Added RestModal, header rest buttons, multi-class Hit Dice counters, and exhaustion badge (`add-long-short-rest`) |
+| 1.5.0 | 2026-11-03 | @jaca | Added Homebrew Feat charge builder form, independent rest recovery selectors, and Feats tab charge/recovery indicators (`add-homebrew-feat-charges`) |
+| 1.4.0 | 2026-11-03 | @jaca | Added Level-Up Wizard half-feat ability score selection widget, validation gating, and payload dispatch (`level-up-half-feat-ability-choice`) |
+| 1.3.0 | 2026-11-02 | @jaca | Aligned encyclopedia and inventory item catalog filters with canonical categories and rarities (`008-srd-item-catalog-seed-and-category-normalization`) |
 | 1.2.0 | 2026-10-31 | @jaca | Integrated EncyclopediaMenu into post-login dashboard, added client-side role gating (`isDM`/`isPlayer`), Monsters & NPCs DM placeholders, and navbar role badge (`add-main-dashboard`) |
 | 1.1.0 | 2026-10-31 | @jaca | Implemented Step 3 multiclass & HP cache, class skills, inline note edit, numeric HP controls, SRD translations, and session integrity guard (`refactor-wizard-hp-srd-and-session`) |
 | 1.0.0 | 2026-10-29 | @jaca | Migrated from `docs/spec/res/frontend-spec.md` and `docs/STATE.md` |
