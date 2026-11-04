@@ -1,0 +1,139 @@
+version: "3.8"
+
+networks:
+  dungeoneer-net:
+    driver: bridge
+
+volumes:
+  dungeoneer-db-data:
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: dungeoneer-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dungeoneer
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD} # Substitua ou defina no Portainer (.env / Stack envs)
+    volumes:
+      - dungeoneer-db-data:/var/lib/postgresql/data
+    # Sem exposição de porta para a VPS/Internet; acessível apenas dentro da rede isolada dungeoneer-net
+    networks:
+      - dungeoneer-net
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dungeoneer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    # Caso use imagens prontas do GitHub Container Registry (GHCR) ou Docker Hub:
+    image: ghcr.io/<SEU_GITHUB_USERNAME_OU_ORG>/dungeoneer-auth-service:latest
+    # Se for compilar localmente na VPS em vez de usar imagem do registry, comente a linha 'image' acima e descomente 'build':
+    # build:
+    #   context: ./auth-service/backend
+    #   dockerfile: ../Dockerfile
+    container_name: dungeoneer-auth
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dungeoneer
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD}
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET_COM_PELO_MENOS_256_BITS}
+      PORT: 8080
+      # Controla o Heap da JVM para respeitar o limite de container
+      JAVA_TOOL_OPTIONS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+    networks:
+      - dungeoneer-net
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 768M
+
+  player-character-service:
+    image: ghcr.io/<SEU_GITHUB_USERNAME_OU_ORG>/dungeoneer-player-character-service:latest
+    # build:
+    #   context: ./player-character-service/backend
+    #   dockerfile: ../Dockerfile
+    container_name: dungeoneer-character
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dungeoneer
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD}
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+      JAVA_TOOL_OPTIONS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+    networks:
+      - dungeoneer-net
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 768M
+
+  api-gateway:
+    image: ghcr.io/<SEU_GITHUB_USERNAME_OU_ORG>/dungeoneer-api-gateway:latest
+    # build:
+    #   context: ./api-gateway/backend
+    #   dockerfile: ../Dockerfile
+    container_name: dungeoneer-gateway
+    restart: unless-stopped
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8080
+      CHARACTER_SERVICE_URL: http://player-character-service:8080
+      PLAYER_CHARACTER_SERVICE_URL: http://player-character-service:8080
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET_COM_PELO_MENOS_256_BITS}
+      PORT: 8080
+      # Origens permitidas no CORS (ex: http://ip-da-sua-vps:3000 ou https://app.seudominio.com)
+      CORS_ALLOWED_ORIGINS: "${FRONTEND_URL:-http://<IP_DA_SUA_VPS_OU_DOMINIO>:3000}"
+      SPRING_PROFILES_ACTIVE: prod
+      JAVA_TOOL_OPTIONS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+    ports:
+      - "9090:8080" # Porta exposta do Gateway na VPS
+    networks:
+      - dungeoneer-net
+    depends_on:
+      - player-character-service
+      - auth-service
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+
+  dungeoneer-frontend:
+    image: ghcr.io/<SEU_GITHUB_USERNAME_OU_ORG>/dungeoneer-frontend:latest
+    # build:
+    #   context: ./dungeoneer-frontend
+    container_name: dungeoneer-frontend
+    restart: unless-stopped
+    environment:
+      # URL pública onde o navegador dos usuários alcança o API Gateway
+      NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:-http://<IP_DA_SUA_VPS_OU_DOMINIO>:9090}"
+    ports:
+      - "3000:3000" # Porta exposta do Frontend na VPS
+    networks:
+      - dungeoneer-net
+    depends_on:
+      - api-gateway
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 512M

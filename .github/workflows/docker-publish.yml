@@ -28,6 +28,9 @@ jobs:
           - service: api-gateway
             context: ./api-gateway/backend
             dockerfile: ./api-gateway/Dockerfile
+          - service: dungeoneer-frontend
+            context: ./dungeoneer-frontend
+            dockerfile: ./dungeoneer-frontend/Dockerfile
 
     steps:
       - name: Checkout code
