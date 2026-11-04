@@ -4,6 +4,7 @@ on:
   push:
     branches: [ "main" ]
     tags: [ 'v*.*.*' ]
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -31,8 +32,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Checkout service submodule
+        run: git submodule update --init --depth 1 ${{ matrix.service }}
 
       - name: Downcase repository owner
         id: repo

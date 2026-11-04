@@ -2,12 +2,12 @@ name: Backend CI (player-character-service)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
     paths:
       - 'player-character-service/**'
       - '.github/workflows/backend-ci.yml'
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
     paths:
       - 'player-character-service/**'
       - '.github/workflows/backend-ci.yml'
@@ -20,8 +20,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Checkout player-character-service submodule
+        run: git submodule update --init --depth 1 player-character-service
 
       - name: Setup Java 21
         uses: actions/setup-java@v4

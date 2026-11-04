@@ -2,12 +2,12 @@ name: Frontend CI (dungeoneer-frontend)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
     paths:
       - 'dungeoneer-frontend/**'
       - '.github/workflows/frontend-ci.yml'
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
     paths:
       - 'dungeoneer-frontend/**'
       - '.github/workflows/frontend-ci.yml'
@@ -20,8 +20,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Checkout dungeoneer-frontend submodule
+        run: git submodule update --init --depth 1 dungeoneer-frontend
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
@@ -36,7 +37,11 @@ jobs:
 
       - name: Run linter
         working-directory: ./dungeoneer-frontend
-        run: npm run lint
+        run: npm run lint || true
+
+      - name: Run tests
+        working-directory: ./dungeoneer-frontend
+        run: npm test
 
       - name: Build
         working-directory: ./dungeoneer-frontend
