@@ -1,7 +1,7 @@
 # Walkthrough: Add Long & Short Rest Mechanics
 
 > **Change ID:** `add-long-short-rest`  
-> **Status:** Em Progresso (Fases 1 e 2 Concluídas)  
+> **Status:** Em Progresso (Fases 1, 2 e 3 Concluídas)  
 > **Data:** 2026-11-03  
 
 ---
@@ -10,18 +10,17 @@
 
 Na Fase 1, estabelecemos a infraestrutura de dados e as regras de domínio fundamentais para o rastreamento de exaustão e controle de Dados de Vida (Hit Dice) gastos e disponíveis, preparando o terreno para o motor de descanso (Fase 2).
 
-### 1. Arquivos Criados e Modificados na Fase 1
+### Arquivos Criados e Modificados na Fase 1
 
 | Arquivo | Camada | Modificação |
 |---|---|---|
-| [`V27__add_exhaustion_and_hit_dice_tracking.sql`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/resources/db/migration/V27__add_exhaustion_and_hit_dice_tracking.sql) | Migração Flyway | Adicionada coluna `exhaustion` (com restrição CHECK de 0 a 6) na tabela `characters` e coluna `hit_dice_spent` (com restrição CHECK >= 0) na tabela `class_progressions`. |
-| [`PlayerCharacter.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/PlayerCharacter.java) | Domínio | Adicionado atributo e validação de `exhaustion` (0 a 6), métodos `withExhaustion`, `addExhaustion`, `removeExhaustion`, `isDeadFromExhaustion`, `withClassProgressions`, propagação de exaustão através de todas as mutações imutáveis (`withCurrentHp`, `withLevelUp`, etc.) sem imports de framework. |
-| [`ClassProgression.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/ClassProgression.java) | Domínio | Adicionado atributo `hitDiceSpent`, validação de limites `0 <= hitDiceSpent <= classLevel`, métodos `spendHitDice(count)`, `recoverHitDice(count)`, `getAvailableHitDice()` e `withHitDiceSpent`. |
-| [`PlayerCharacterJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/PlayerCharacterJpaEntity.java) | Persistência | Mapeamento JPA bidirecional da coluna `exhaustion` em `toDomain()` e `fromDomain()`. |
-| [`ClassProgressionJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/ClassProgressionJpaEntity.java) | Persistência | Mapeamento JPA bidirecional da coluna `hit_dice_spent` em `toDomain()` e `fromDomain()`. |
-| [`ClassProgressionTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/domain/model/ClassProgressionTest.java) | Testes Unitários | 7 novos testes unitários validando ciclo de vida, gastos, recuperação e rejeição de limites de Dados de Vida. |
-| [`PlayerCharacterTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/domain/model/PlayerCharacterTest.java) | Testes Unitários | Testes unitários para valores de exaustão, limites (0-6), morte por exaustão no nível 6 e preservação em mutações. |
-| [`tasks.md`](file:///D:/Projects/Dungeoneer/openspec/changes/add-long-short-rest/tasks.md) | Documentação | Atualizadas tarefas da Fase 1 como concluídas `[x]`. |
+| [`V27__add_exhaustion_and_hit_dice_tracking.sql`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/resources/db/migration/V27__add_exhaustion_and_hit_dice_tracking.sql) | Migração Flyway | Adicionada coluna `exhaustion` (CHECK 0-6) na tabela `characters` e coluna `hit_dice_spent` (CHECK >= 0) na tabela `class_progressions`. |
+| [`PlayerCharacter.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/PlayerCharacter.java) | Domínio | Atributo e métodos de `exhaustion`, propagação imutável sem frameworks. |
+| [`ClassProgression.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/ClassProgression.java) | Domínio | Métodos `spendHitDice`, `recoverHitDice`, `getAvailableHitDice`, `withHitDiceSpent`. |
+| [`PlayerCharacterJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/PlayerCharacterJpaEntity.java) | Persistência | Mapeamento JPA bidirecional da coluna `exhaustion`. |
+| [`ClassProgressionJpaEntity.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/ClassProgressionJpaEntity.java) | Persistência | Mapeamento JPA bidirecional da coluna `hit_dice_spent`. |
+| [`ClassProgressionTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/domain/model/ClassProgressionTest.java) | Testes Unitários | 7 testes unitários de ciclo de vida de Dados de Vida. |
+| [`PlayerCharacterTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/domain/model/PlayerCharacterTest.java) | Testes Unitários | Testes unitários para valores e limites de exaustão. |
 
 ---
 
@@ -29,39 +28,72 @@ Na Fase 1, estabelecemos a infraestrutura de dados e as regras de domínio funda
 
 Na Fase 2, implementamos as regras e cálculos de descanso delegados via Strategy Pattern no `RulesEngine`, além da reescrita completa do `RestService`.
 
-### 1. Arquivos Criados e Modificados na Fase 2
+### Arquivos Criados e Modificados na Fase 2
 
 | Arquivo | Camada | Modificação |
 |---|---|---|
-| [`RulesEngine.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/RulesEngine.java) | Domínio | Métodos adicionados: `calculateHitDieHealing(dieRoll, constitutionModifier)`, `calculateHitDiceRecovery(totalCharacterLevel)`, `calculateExhaustionRecovery(currentExhaustion)`, e factory helper estático `RulesEngine.forRuleset(ruleset)`. |
-| [`Srd2014RulesEngine.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/Srd2014RulesEngine.java) | Domínio | Implementação pura de regras de descanso SRD 2014: cura de dado de vida com mod CON (mínimo 0 por dado), recuperação de metade do nível total de dados de vida arredondado para baixo (mínimo 1 dado), redução de exaustão em 1 (mínimo 0). |
-| [`Srd2024RulesEngine.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/Srd2024RulesEngine.java) | Domínio | Implementação para SRD 2024 delegando coerentemente ao motor base. |
-| [`RestCommand.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/dto/RestCommand.java) | Aplicação (DTO) | Adicionado record interno `HitDiceSpendRequest(classProgressionId, count)` com validações Jakarta (`@NotNull`, `@Min(1)`), mantendo retrocompatibilidade total com construtores anteriores. |
-| [`RestService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/RestService.java) | Aplicação (Serviço) | Reescrita completa do orquestrador de descanso: barreira de segurança contra ressurreição (personagem a 0 HP rejeitado com 422), preservação estrita de HP temporário no Descanso Longo, rolagem autoritativa de dados pelo servidor via `DiceRoller`, aplicação e capeamento de cura no HP máximo, controle atômico de dados de vida gastos/recuperados por progressão de classe, redução de exaustão, e recarga de cargas de talentos via `FeatChargeCalculator`. |
-| [`RulesEngineTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/domain/model/RulesEngineTest.java) | Testes de Domínio | Adicionado caso de teste (TE-07, TE-05, TE-06) cobrindo cálculos de cura com mod CON negativo/positivo, recuperação de dados para níveis 1 a 20 e limites de exaustão. |
-| [`RestServiceTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/application/service/RestServiceTest.java) | Testes de Serviço | 9 testes unitários determinísticos cobrindo TP-01, TP-02, TE-01, TE-02, TE-03, TE-04, TE-05, TE-06 e recuperação de cargas de talentos em descanso curto e longo. |
-| [`tasks.md`](file:///D:/Projects/Dungeoneer/openspec/changes/add-long-short-rest/tasks.md) | Documentação | Atualizadas tarefas da Fase 2 como concluídas `[x]`. |
+| [`RulesEngine.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/RulesEngine.java) | Domínio | Métodos de cálculo de descanso: `calculateHitDieHealing`, `calculateHitDiceRecovery`, `calculateExhaustionRecovery`, e factory helper `RulesEngine.forRuleset`. |
+| [`Srd2014RulesEngine.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/Srd2014RulesEngine.java) | Domínio | Regras SRD 2014 para descanso curto e longo. |
+| [`Srd2024RulesEngine.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/model/Srd2024RulesEngine.java) | Domínio | Regras SRD 2024 para descanso curto e longo. |
+| [`RestCommand.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/dto/RestCommand.java) | Aplicação (DTO) | Record `HitDiceSpendRequest(classProgressionId, count)` com validações Jakarta. |
+| [`RestService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/RestService.java) | Aplicação (Serviço) | Reescrita completa do serviço com rolagem autoritativa, barreira de segurança de 0 HP, preservação de HP temporário no Descanso Longo e recuperação de cargas de talentos. |
+| [`RulesEngineTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/domain/model/RulesEngineTest.java) | Testes de Domínio | Teste TE-07, TE-05, TE-06 cobrindo fórmulas em SRD 2014 e 2024. |
+| [`RestServiceTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/application/service/RestServiceTest.java) | Testes de Serviço | 9 testes unitários determinísticos (TP-01, TP-02, TE-01 a TE-06). |
 
 ---
 
-## 🧪 Verificação e Resultados dos Testes — Fase 2
+## 📋 Resumo da Execução — Fase 3 (Controlador REST, DTOs & Testes de Integração)
+
+Na Fase 3, expusemos os novos campos de exaustão e resumo de Dados de Vida na API HTTP REST, mapeamos respostas RFC 7807 `ProblemDetail` para falhas de domínio e validação, e validamos o ciclo completo de persistência via Testcontainers e MockMvc.
+
+### Arquivos Criados e Modificados na Fase 3
+
+| Arquivo | Camada | Modificação |
+|---|---|---|
+| [`RestValidationException.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/domain/exception/RestValidationException.java) | Domínio (Exceção) | Nova exceção para violações de regras de descanso (sobregasto de dados de vida, progressão inexistente), herdando de `CharacterValidationException`. |
+| [`GlobalExceptionHandler.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/core/web/GlobalExceptionHandler.java) | Web (Handler) | Tratamento especializado de `RestValidationException` mapeando para HTTP 400 Bad Request ProblemDetail. |
+| [`CharacterClassSummaryDto.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/dto/CharacterClassSummaryDto.java) | Aplicação (DTO) | Adicionados `classProgressionId`, `hitDie`, `hitDiceSpent`, `availableHitDice` mantendo compatibilidade com construtores anteriores. |
+| [`CharacterSheetResult.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/dto/CharacterSheetResult.java) | Aplicação (DTO) | Adicionado campo `exhaustion` com construtor sobrecarregado para compatibilidade. |
+| [`CharacterSheetResponse.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/dto/CharacterSheetResponse.java) | Web (DTO) | Adicionado campo `exhaustion` com construtor sobrecarregado para compatibilidade. |
+| [`PlayerCharacterWebMapper.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/in/web/mapper/PlayerCharacterWebMapper.java) | Web (Mapper) | Mapeamento do campo `exhaustion` de `CharacterSheetResult` para `CharacterSheetResponse`. |
+| [`CharacterSheetHydrator.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CharacterSheetHydrator.java) | Aplicação (Serviço) | Hidratação de `classProgressionId`, `hitDie`, `hitDiceSpent`, `availableHitDice` e `exhaustion` no resultado da ficha. |
+| [`CharacterQueryService.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/application/service/CharacterQueryService.java) | Aplicação (Serviço) | Hidratação completa de `CharacterClassSummaryDto` na listagem de personagens. |
+| [`PlayerCharacterPersistenceAdapter.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/main/java/com/dungeoneer/playerCharacter/adapter/out/persistence/PlayerCharacterPersistenceAdapter.java) | Persistência | Correção de salvamento de `ability_scores` preservando ID em updates de personagem. |
+| [`PlayerCharacterControllerTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/in/web/controller/PlayerCharacterControllerTest.java) | Testes Web (MockMvc) | 4 testes cobrindo `POST /{id}/rest` com sucesso (TP-03), sobregasto de dados de vida retornando 400 (TE-02), tentativa de descanso em personagem morto retornando 422 (TE-03) e progressão inexistente retornando 400 (TE-04). |
+| [`PlayerCharacterPersistenceAdapterTest.java`](file:///D:/Projects/Dungeoneer/player-character-service/backend/src/test/java/com/dungeoneer/playerCharacter/adapter/out/persistence/PlayerCharacterPersistenceAdapterTest.java) | Testes de Integração (Testcontainers) | Teste TP-04 validando persistência real em PostgreSQL de `characters.exhaustion` e `class_progressions.hit_dice_spent` através de um ciclo de descanso. |
+| [`tasks.md`](file:///D:/Projects/Dungeoneer/openspec/changes/add-long-short-rest/tasks.md) | Documentação | Atualizadas tarefas da Fase 3 como concluídas `[x]`. |
+
+---
+
+## 🧪 Verificação e Resultados dos Testes — Fase 3
 
 ```bash
-# Execução dos testes de descanso e motor de regras:
-mvn test -f player-character-service/backend/pom.xml "-Dtest=*Rest*Test,*RulesEngineTest"
-# Resultado: Tests run: 21, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
+# Execução dos testes MockMvc do controlador:
+mvn test -f player-character-service/backend/pom.xml "-Dtest=PlayerCharacterControllerTest"
+# Resultado: Tests run: 20, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
 
-# Execução da suíte completa de serviços e domínio:
-mvn test -f player-character-service/backend/pom.xml "-Dtest=*ServiceTest,*Progression*Test,*RulesEngine*Test"
-# Resultado: Tests run: 113, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
+# Execução do teste de integração com PostgreSQL real (Testcontainers):
+mvn test -f player-character-service/backend/pom.xml "-Dtest=PlayerCharacterPersistenceAdapterTest"
+# Resultado: Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
+
+# Execução da suíte completa de testes do backend:
+mvn clean test -f player-character-service/backend/pom.xml
+# Resultado: Tests run: 287, Failures: 0, Errors: 0, Skipped: 1 — BUILD SUCCESS
 ```
 
 ---
 
-## 🎯 Contexto para a Fase 3 (Controlador REST, DTOs & Testes de Integração)
+## 🎯 Contexto para a Fase 4 (Frontend UI/UX & Vitest)
 
-Na **Fase 3**:
-1. Atualizar portas e DTOs de resposta da ficha (`CharacterSheetResult`, `CharacterClassSummaryDto`) para expor `exhaustion`, `hitDiceSpent` e `availableHitDice`.
-2. Atualizar o `PlayerCharacterController` com o endpoint `POST /api/v1/characters/{id}/rest`.
-3. Validar RFC 7807 `ProblemDetail` para casos de erro (personagem morto/0 HP, gastar mais dados do que disponíveis, ID de progressão inválido).
-4. Implementar testes MockMvc (`PlayerCharacterControllerTest`) e testes de integração com Testcontainers (`PlayerCharacterPersistenceIntegrationTest`).
+Na **Fase 4**:
+1. Atualizar tipos no frontend ([`dungeoneer-frontend/lib/api/characters.ts`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/lib/api/characters.ts)): adicionar `exhaustion`, `hitDie`, `hitDiceSpent`, `availableHitDice` em `CharacterClassSummary` e `RestPayload`.
+2. Criar o componente de modal de descanso ([`dungeoneer-frontend/components/character-sheet/rest-modal.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/components/character-sheet/rest-modal.tsx)):
+   - Seleção entre Descanso Curto e Descanso Longo.
+   - Para Descanso Curto: seletores de Dados de Vida a gastar por classe (respeitando disponíveis), exibindo bônus de CON e estimativa.
+   - Para Descanso Longo: confirmação detalhando recuperação total de PV, recuperação de metade dos dados de vida e redução de 1 de exaustão.
+   - Validações: desabilitar botões se HP <= 0 ("Personagem Inconsciente / Morto").
+3. Integrar na página da ficha ([`dungeoneer-frontend/app/characters/[id]/page.tsx`](file:///D:/Projects/Dungeoneer/dungeoneer-frontend/app/characters/[id]/page.tsx)):
+   - Botões de "Descanso Curto" e "Descanso Longo" no cabeçalho/painel de status.
+   - Contador de Dados de Vida disponíveis / totais na barra de status de combate.
+   - Badge visual de Exaustão quando `exhaustion > 0`.
+4. Implementar testes unitários Vitest (TP-05).
