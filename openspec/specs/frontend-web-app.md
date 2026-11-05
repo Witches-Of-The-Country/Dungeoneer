@@ -1,7 +1,7 @@
 ---
 id: "frontend-web-app"
 title: "Dungeoneer Frontend Web App — Living Specification"
-version: "1.8.0"
+version: "1.9.0"
 status: "active"
 owners:
   - "@jaca"
@@ -176,6 +176,18 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
 - **Charged Action Button Visibility**: In `ActionsTab`, any feat action configured with `maxCharges > 0` displays the "Gastar" action button, even if `isRollable` is true.
 - **Roll Consumption Integration**: When rolling an action associated with a charged feat (`maxCharges > 0` and `currentCharges > 0`), `DiceRollerModal` automatically executes `useFeatMutation` to spend 1 charge on roll trigger, keeping the character's active charge counters synchronized with dice rolls.
 
+### [RF-07] Equipment Slots Grid, Temp HP Absorption & Custom Actions CRUD
+
+- **Equipment Slots Overview (`InventoryTab`)**:
+  - Displays the 11 canonical equipment slots (`Peito`, `Capacete`, `Luvas`, `Botas`, `Calças`, `Capa`, `Colar`, `Mão Direita`, `Mão Esquerda`, `Anel 1`, `Anel 2`) in a responsive grid.
+  - Slots display the equipped item name, item rarity badge, slot name, and a direct "Tirar" action button. Empty slots display a dashed placeholder.
+  - Equipping an item automatically assigns it to its default or compatible slot, resolving slot occupancy on the backend.
+- **Combat Sheet Temporary HP Absorption (`app/characters/[id]/page.tsx`)**:
+  - Incoming damage applied via `handleApplyDamage` or quick-decrement `-1 PV` absorbs from `hitPointsTemp` first before spilling over to `hitPointsCurrent`.
+  - Damage adjustment buttons remain interactable whenever `hitPointsCurrent > 0` OR `hitPointsTemp > 0`.
+- **Custom Actions Management (`ActionsTab`)**:
+  - Custom combat actions (`category === 'CUSTOM'`) provide full CRUD controls: creation modal, edit modal with live field pre-population, and deletion confirmation modal.
+
 ---
 
 ## Out of Scope
@@ -189,6 +201,7 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.9.0 | 2026-11-05 | @jaca | Documented 11-slot equipment grid in InventoryTab, Temp HP damage absorption order in Character Sheet combat controls, and Custom Actions Edit/Delete modals in ActionsTab (`003-fix-equipment-slots-and-combat-sheet`) |
 | 1.8.0 | 2026-11-05 | @jaca | Documented charged actions button display and automatic charge deduction upon dice roll in ActionsTab and DiceRollerModal (`002-fix-legacy-items-and-feats-mechanics`) |
 | 1.7.0 | 2026-11-05 | @jaca | Consolidated HttpOnly session model, credentials inclusion, `/api/auth/me` rehydration, loop-free redirect guard, and dynamic Navbar brand link (`001-fix-auth-post-register-loop`) |
 | 1.6.0 | 2026-11-03 | @jaca | Added RestModal, header rest buttons, multi-class Hit Dice counters, and exhaustion badge (`add-long-short-rest`) |

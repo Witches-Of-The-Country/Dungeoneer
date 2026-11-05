@@ -1,7 +1,7 @@
 ---
 id: "player-character-domain"
 title: "Player Character Domain & API — Living Specification"
-version: "1.7.0"
+version: "1.8.0"
 status: "active"
 owners:
   - "@jaca"
@@ -431,6 +431,25 @@ Capabilities granted by Feats are structured via immutable domain records in `do
   3. Propagates effective ability scores to derived modifiers, saving throws, skill proficiencies, weapon attack/damage bonuses, armor class (AC), and ability-modifier-based feat charges.
   4. Applies passive item `acBonus` directly to computed AC.
 
+### Equipment Slots System (`EquipmentSlot`) & Inventory Rules
+
+- **Discrete Slots Hierarchy**: The inventory system enforces canonical equipment slots via the `EquipmentSlot` enum (`CHEST`, `GLOVES`, `BOOTS`, `HELMET`, `PANTS`, `LEFT_HAND`, `RIGHT_HAND`, `CLOAK`, `RING_1`, `RING_2`, `NECKLACE`).
+- **Slot Invariants & Conflict Resolution**:
+  - Each discrete slot can hold at most one item. Equipping an item into an occupied slot automatically unequips the previous occupant.
+  - Body armors can only be equipped in `CHEST`. Attempting to equip a second armor automatically unequips the existing body armor in `CHEST`.
+  - Shields can only be equipped in `LEFT_HAND` (or `RIGHT_HAND`).
+  - Weapons with `WeaponProperty.TWO_HANDED` occupy `RIGHT_HAND` and lock both hands, automatically unequipping shields or off-hand weapons in `LEFT_HAND`.
+  - Rings are strictly capped at two simultaneous items across `RING_1` and `RING_2`.
+
+### Temporary Hit Points Damage Absorption Order
+
+- When damage is applied to a character via `PlayerCharacter.takeDamage(int amount)`:
+  1. `absorbedByTemp = Math.min(hitPointsTemp, amount)`
+  2. `newTempHp = hitPointsTemp - absorbedByTemp`
+  3. `remainingDamage = amount - absorbedByTemp`
+  4. `newCurrentHp = Math.max(0, hitPointsCurrent - remainingDamage)`
+  Damage never impacts true HP (`hitPointsCurrent`) until all temporary HP (`hitPointsTemp`) is completely depleted.
+
 Example `ProblemDetail` payload:
 ```json
 {
@@ -457,6 +476,7 @@ Example `ProblemDetail` payload:
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.8.0 | 2026-11-05 | @jaca | Integrated EquipmentSlot enum, slot occupancy & auto-unequip rules, 2-ring limit, two-handed hand locking, and D&D 5e Temp HP absorption order (`003-fix-equipment-slots-and-combat-sheet`) |
 | 1.7.0 | 2026-11-05 | @jaca | Integrated WondrousMechanics, dynamic item ability score overrides/bonuses in CharacterSheetHydrator, and cascade-safe RestService feat charge recovery (`002-fix-legacy-items-and-feats-mechanics`) |
 | 1.6.0 | 2026-11-03 | @jaca | Implemented Short and Long Rest mechanics, Hit Dice spending and recovery, exhaustion decrement, and 0 HP rest guard (`add-long-short-rest`) |
 | 1.5.0 | 2026-11-03 | @jaca | Added configurable feat charge formulas (`ChargeType`), independent rest recovery rules (`ChargeRecoveryType`), dynamic hydration recalculation, and legacy fallback (`add-homebrew-feat-charges`) |

@@ -1,7 +1,7 @@
 ---
 id: "player-character-data-model"
 title: "Player Character Data Model & Persistence — Living Specification"
-version: "1.8.0"
+version: "1.9.0"
 status: "active"
 owners:
   - "@jaca"
@@ -250,6 +250,7 @@ erDiagram
         int quantity
         boolean is_equipped
         boolean is_attuned
+        varchar equipped_slot
     }
 
     character_feats {
@@ -579,6 +580,7 @@ erDiagram
 | V26 | `V26__seed_complete_srd_general_and_origin_feats.sql` | Complete catalog of SRD 2014 & SRD 2024 General Feats, Origin Feats with `spellChoice`, and prerequisite metadata |
 | V27 | `V27__add_exhaustion_and_hit_dice_tracking.sql` | Add `exhaustion` (0-6) to `characters` and `hit_dice_spent` (>=0) to `class_progressions` |
 | V29 | `V29__fix_legacy_items_and_feats_mechanics.sql` | Populate ArmorMechanics for 6 missing armors, seed WondrousMechanics on SRD magic items, and normalize feat mechanical_effects JSONB keys |
+| V30 | `V30__add_equipment_slots_and_custom_actions.sql` | Add `equipped_slot` (VARCHAR 30) to `character_items`, migrate legacy equipped items to canonical slots with duplicate armor resolution, and create `character_custom_actions` table |
 
 ---
 
@@ -592,6 +594,7 @@ erDiagram
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.9.0 | 2026-11-05 | @jaca | Documented Flyway migration V30 (equipped_slot on character_items, legacy slot migration & duplicate armor resolution, character_custom_actions table) (`003-fix-equipment-slots-and-combat-sheet`) |
 | 1.8.0 | 2026-11-05 | @jaca | Documented Flyway migration V29 (ArmorMechanics fix, WondrousMechanics seeding, feat mechanical_effects normalization, character_feats charge backfill) (`002-fix-legacy-items-and-feats-mechanics`) |
 | 1.7.0 | 2026-11-03 | @jaca | Added `exhaustion` tracking to `characters` and `hit_dice_spent` tracking to `class_progressions` (V27 migration) (`add-long-short-rest`) |
 | 1.6.0 | 2026-11-03 | @jaca | Documented `feats.mechanical_effects` JSONB structure for feat charge and rest recovery configurations (`add-homebrew-feat-charges`) |
