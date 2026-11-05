@@ -1,7 +1,7 @@
 ---
 id: "player-character-domain"
 title: "Player Character Domain & API — Living Specification"
-version: "1.8.0"
+version: "1.9.0"
 status: "active"
 owners:
   - "@jaca"
@@ -433,9 +433,10 @@ Capabilities granted by Feats are structured via immutable domain records in `do
 
 ### Equipment Slots System (`EquipmentSlot`) & Inventory Rules
 
-- **Discrete Slots Hierarchy**: The inventory system enforces canonical equipment slots via the `EquipmentSlot` enum (`CHEST`, `GLOVES`, `BOOTS`, `HELMET`, `PANTS`, `LEFT_HAND`, `RIGHT_HAND`, `CLOAK`, `RING_1`, `RING_2`, `NECKLACE`).
+- **Discrete Slots Hierarchy**: The inventory system enforces canonical equipment slots via the `EquipmentSlot` enum (`CHEST`, `GLOVES`, `BOOTS`, `HELMET`, `PANTS`, `LEFT_HAND`, `RIGHT_HAND`, `CLOAK`, `RING_1`, `RING_2`, `NECKLACE`, `TRINKET`).
 - **Slot Invariants & Conflict Resolution**:
   - Each discrete slot can hold at most one item. Equipping an item into an occupied slot automatically unequips the previous occupant.
+  - The `TRINKET` slot holds belts, girdles, sashes, talismans, charms, and trinkets. Armors, weapons, shields, and rings cannot be equipped in `TRINKET`.
   - Body armors can only be equipped in `CHEST`. Attempting to equip a second armor automatically unequips the existing body armor in `CHEST`.
   - Shields can only be equipped in `LEFT_HAND` (or `RIGHT_HAND`).
   - Weapons with `WeaponProperty.TWO_HANDED` occupy `RIGHT_HAND` and lock both hands, automatically unequipping shields or off-hand weapons in `LEFT_HAND`.
@@ -476,6 +477,7 @@ Example `ProblemDetail` payload:
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.9.0 | 2026-11-05 | @jaca | Added 12th discrete TRINKET equipment slot (belts, charms, talismans) and keyword auto-inference (`007-add-trinket-equipment-slot`) |
 | 1.8.0 | 2026-11-05 | @jaca | Integrated EquipmentSlot enum, slot occupancy & auto-unequip rules, 2-ring limit, two-handed hand locking, and D&D 5e Temp HP absorption order (`003-fix-equipment-slots-and-combat-sheet`) |
 | 1.7.0 | 2026-11-05 | @jaca | Integrated WondrousMechanics, dynamic item ability score overrides/bonuses in CharacterSheetHydrator, and cascade-safe RestService feat charge recovery (`002-fix-legacy-items-and-feats-mechanics`) |
 | 1.6.0 | 2026-11-03 | @jaca | Implemented Short and Long Rest mechanics, Hit Dice spending and recovery, exhaustion decrement, and 0 HP rest guard (`add-long-short-rest`) |

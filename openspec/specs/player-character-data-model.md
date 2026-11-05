@@ -1,7 +1,7 @@
 ---
 id: "player-character-data-model"
 title: "Player Character Data Model & Persistence — Living Specification"
-version: "1.9.0"
+version: "1.10.0"
 status: "active"
 owners:
   - "@jaca"
@@ -581,6 +581,7 @@ erDiagram
 | V27 | `V27__add_exhaustion_and_hit_dice_tracking.sql` | Add `exhaustion` (0-6) to `characters` and `hit_dice_spent` (>=0) to `class_progressions` |
 | V29 | `V29__fix_legacy_items_and_feats_mechanics.sql` | Populate ArmorMechanics for 6 missing armors, seed WondrousMechanics on SRD magic items, and normalize feat mechanical_effects JSONB keys |
 | V30 | `V30__add_equipment_slots_and_custom_actions.sql` | Add `equipped_slot` (VARCHAR 30) to `character_items`, migrate legacy equipped items to canonical slots with duplicate armor resolution, and create `character_custom_actions` table |
+| V31 | `V31__add_trinket_equipment_slot.sql` | Migrate equipped belts, sashes, talismans, charms, and trinkets to TRINKET slot |
 
 ---
 
@@ -594,6 +595,7 @@ erDiagram
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.10.0 | 2026-11-05 | @jaca | Documented Flyway migration V31 (TRINKET slot legacy data migration for belts and charms) (`007-add-trinket-equipment-slot`) |
 | 1.9.0 | 2026-11-05 | @jaca | Documented Flyway migration V30 (equipped_slot on character_items, legacy slot migration & duplicate armor resolution, character_custom_actions table) (`003-fix-equipment-slots-and-combat-sheet`) |
 | 1.8.0 | 2026-11-05 | @jaca | Documented Flyway migration V29 (ArmorMechanics fix, WondrousMechanics seeding, feat mechanical_effects normalization, character_feats charge backfill) (`002-fix-legacy-items-and-feats-mechanics`) |
 | 1.7.0 | 2026-11-03 | @jaca | Added `exhaustion` tracking to `characters` and `hit_dice_spent` tracking to `class_progressions` (V27 migration) (`add-long-short-rest`) |
