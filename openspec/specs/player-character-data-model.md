@@ -1,7 +1,7 @@
 ---
 id: "player-character-data-model"
 title: "Player Character Data Model & Persistence — Living Specification"
-version: "1.7.0"
+version: "1.8.0"
 status: "active"
 owners:
   - "@jaca"
@@ -578,6 +578,7 @@ erDiagram
 | V25 | `V25__seed_complete_srd_classes_and_subclasses_progression_feats.sql` | Complete 1-20 class progression features and subclass archetypes for all SRD classes |
 | V26 | `V26__seed_complete_srd_general_and_origin_feats.sql` | Complete catalog of SRD 2014 & SRD 2024 General Feats, Origin Feats with `spellChoice`, and prerequisite metadata |
 | V27 | `V27__add_exhaustion_and_hit_dice_tracking.sql` | Add `exhaustion` (0-6) to `characters` and `hit_dice_spent` (>=0) to `class_progressions` |
+| V29 | `V29__fix_legacy_items_and_feats_mechanics.sql` | Populate ArmorMechanics for 6 missing armors, seed WondrousMechanics on SRD magic items, and normalize feat mechanical_effects JSONB keys |
 
 ---
 
@@ -591,6 +592,7 @@ erDiagram
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.8.0 | 2026-11-05 | @jaca | Documented Flyway migration V29 (ArmorMechanics fix, WondrousMechanics seeding, feat mechanical_effects normalization, character_feats charge backfill) (`002-fix-legacy-items-and-feats-mechanics`) |
 | 1.7.0 | 2026-11-03 | @jaca | Added `exhaustion` tracking to `characters` and `hit_dice_spent` tracking to `class_progressions` (V27 migration) (`add-long-short-rest`) |
 | 1.6.0 | 2026-11-03 | @jaca | Documented `feats.mechanical_effects` JSONB structure for feat charge and rest recovery configurations (`add-homebrew-feat-charges`) |
 | 1.5.0 | 2026-11-03 | @jaca | Seeded complete SRD 2014 and SRD 2024 General Feats, Origin Feats, structured `spellChoice` metadata, and dynamic prerequisite rules (`009-seed-complete-srd-general-and-origin-feats`) |

@@ -1,7 +1,7 @@
 ---
 id: "frontend-web-app"
 title: "Dungeoneer Frontend Web App — Living Specification"
-version: "1.7.0"
+version: "1.8.0"
 status: "active"
 owners:
   - "@jaca"
@@ -171,6 +171,11 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
     - Explanatory confirmation screen detailing recovery of all HP, half total Hit Dice, spell slots, long-rest feat charges, and reduction of 1 exhaustion level.
   - Integrated with `useTakeRest` mutation (`POST /api/characters/{id}/rest`), automatically invalidating the character sheet cache on success and displaying RFC 7807 toast alerts on error.
 
+### [RF-06] Charged Actions & Dice Roller Deduction (`ActionsTab`, `DiceRollerModal`)
+
+- **Charged Action Button Visibility**: In `ActionsTab`, any feat action configured with `maxCharges > 0` displays the "Gastar" action button, even if `isRollable` is true.
+- **Roll Consumption Integration**: When rolling an action associated with a charged feat (`maxCharges > 0` and `currentCharges > 0`), `DiceRollerModal` automatically executes `useFeatMutation` to spend 1 charge on roll trigger, keeping the character's active charge counters synchronized with dice rolls.
+
 ---
 
 ## Out of Scope
@@ -184,6 +189,7 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.8.0 | 2026-11-05 | @jaca | Documented charged actions button display and automatic charge deduction upon dice roll in ActionsTab and DiceRollerModal (`002-fix-legacy-items-and-feats-mechanics`) |
 | 1.7.0 | 2026-11-05 | @jaca | Consolidated HttpOnly session model, credentials inclusion, `/api/auth/me` rehydration, loop-free redirect guard, and dynamic Navbar brand link (`001-fix-auth-post-register-loop`) |
 | 1.6.0 | 2026-11-03 | @jaca | Added RestModal, header rest buttons, multi-class Hit Dice counters, and exhaustion badge (`add-long-short-rest`) |
 | 1.5.0 | 2026-11-03 | @jaca | Added Homebrew Feat charge builder form, independent rest recovery selectors, and Feats tab charge/recovery indicators (`add-homebrew-feat-charges`) |

@@ -4,7 +4,7 @@
 > **Execution Order:** `003`
 > **Type:** Bugfix & Legacy Adaptation
 > **Priority:** High
-> **Status:** draft
+> **Status:** completed
 > **Created:** 2026-11-04
 > **Last Updated:** 2026-11-04
 
@@ -79,12 +79,12 @@ Addresses three core Character Sheet & Inventory issues:
 
 ## Acceptance Criteria
 
-- [ ] **Given** a character with an armor equipped in `CHEST` **When** they equip a second armor **Then** the previous armor in `CHEST` is automatically unequipped (or replaced) so two armors are never equipped simultaneously.
-- [ ] **Given** a character equipping rings **When** `RING_1` and `RING_2` are occupied **Then** equipping a third ring requires replacing `RING_1` or `RING_2`.
-- [ ] **Given** a character with `10` Current HP and `5` Temporary HP **When** they take `3` damage **Then** Temporary HP becomes `2` and Current HP remains `10`.
-- [ ] **Given** a character with `10` Current HP and `5` Temporary HP **When** they take `8` damage **Then** Temporary HP becomes `0` and Current HP becomes `7`.
-- [ ] **Given** a character with a Custom Action in the Actions tab **When** the user clicks Edit or Delete **Then** they can modify its name, action type, attack bonus, damage formula/type, and description, or delete it permanently.
-- [ ] **Given** an existing character in the database with 2 armors marked `is_equipped = true` prior to migration `V30` **When** the migration runs **Then** only one armor remains equipped in `CHEST`.
+- [x] **Given** a character with an armor equipped in `CHEST` **When** they equip a second armor **Then** the previous armor in `CHEST` is automatically unequipped (or replaced) so two armors are never equipped simultaneously.
+- [x] **Given** a character equipping rings **When** `RING_1` and `RING_2` are occupied **Then** equipping a third ring requires replacing `RING_1` or `RING_2`.
+- [x] **Given** a character with `10` Current HP and `5` Temporary HP **When** they take `3` damage **Then** Temporary HP becomes `2` and Current HP remains `10`.
+- [x] **Given** a character with `10` Current HP and `5` Temporary HP **When** they take `8` damage **Then** Temporary HP becomes `0` and Current HP becomes `7`.
+- [x] **Given** a character with a Custom Action in the Actions tab **When** the user clicks Edit or Delete **Then** they can modify its name, action type, attack bonus, damage formula/type, and description, or delete it permanently.
+- [x] **Given** an existing character in the database with 2 armors marked `is_equipped = true` prior to migration `V30` **When** the migration runs **Then** only one armor remains equipped in `CHEST`.
 
 ## Defensive Security & Validation Considerations
 

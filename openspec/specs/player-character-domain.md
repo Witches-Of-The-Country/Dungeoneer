@@ -1,7 +1,7 @@
 ---
 id: "player-character-domain"
 title: "Player Character Domain & API — Living Specification"
-version: "1.6.0"
+version: "1.7.0"
 status: "active"
 owners:
   - "@jaca"
@@ -419,6 +419,17 @@ Capabilities granted by Feats are structured via immutable domain records in `do
   - **Short Rest**: Characters may spend available Hit Dice by class progression. The server rolls each die + character CON modifier (minimum 0 per die), restoring current HP up to max HP. Temporary HP is preserved. Short-rest feat charges are recovered.
   - **Long Rest**: Character restores full current HP. Temporary HP is preserved. Character recovers half of total Hit Dice across all class progressions (minimum 1), all spell slots, all long-rest feat charges, and decreases exhaustion by 1 (minimum 0). Hit dice cannot be spent during a long rest.
   - Mechanics are resolved via `RulesEngine` strategy (`SRD_2014RulesEngine` / `Srd2024RulesEngine`).
+  - `RestService.recoverFeats` returns updated `CharacterFeat` instances attached to `characterToSave.withFeats(recoveredFeats)` prior to `characterRepository.save(characterToSave)`, preventing cascade overwrites.
+
+### Item Mechanics & Dynamic Sheet Hydration (`ItemMechanics`, `CharacterSheetHydrator`)
+
+- **Item Mechanics Hierarchy**: Equipment items represent their mechanical properties using the sealed `ItemMechanics` record hierarchy (`WeaponMechanics`, `ArmorMechanics`, `WondrousMechanics`).
+  - `WondrousMechanics(Map<Ability, Integer> abilityBonuses, Map<Ability, Integer> abilityOverrides, int acBonus, int savingThrowBonus)`: Represents wondrous and magic items modifying attributes or defenses. Ability overrides must be between 1 and 30 (`CharacterValidationException`).
+- **Dynamic Ability Scores & Derived Stats Hydration**: `CharacterSheetHydrator` calculates effective ability scores from equipped items (requiring `attuned == true` if `requiresAttunement == true`):
+  1. Adds `abilityBonuses` to base ability scores (capped at 30).
+  2. Applies `abilityOverrides` via `Math.max(scoreWithBonuses, overrideValue)` per D&D 5e mechanics.
+  3. Propagates effective ability scores to derived modifiers, saving throws, skill proficiencies, weapon attack/damage bonuses, armor class (AC), and ability-modifier-based feat charges.
+  4. Applies passive item `acBonus` directly to computed AC.
 
 Example `ProblemDetail` payload:
 ```json
@@ -446,6 +457,7 @@ Example `ProblemDetail` payload:
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.7.0 | 2026-11-05 | @jaca | Integrated WondrousMechanics, dynamic item ability score overrides/bonuses in CharacterSheetHydrator, and cascade-safe RestService feat charge recovery (`002-fix-legacy-items-and-feats-mechanics`) |
 | 1.6.0 | 2026-11-03 | @jaca | Implemented Short and Long Rest mechanics, Hit Dice spending and recovery, exhaustion decrement, and 0 HP rest guard (`add-long-short-rest`) |
 | 1.5.0 | 2026-11-03 | @jaca | Added configurable feat charge formulas (`ChargeType`), independent rest recovery rules (`ChargeRecoveryType`), dynamic hydration recalculation, and legacy fallback (`add-homebrew-feat-charges`) |
 | 1.4.0 | 2026-11-03 | @jaca | Added validation and application of half-feat ability choices (`abilityBonusChoice`) during level-up (`level-up-half-feat-ability-choice`) |
