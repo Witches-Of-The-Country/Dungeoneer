@@ -11,5 +11,8 @@ APIkeyLinear.txt
 .DS_Store
 Thumbs.db
 
+# Dependencies
+node_modules/
+
 # Antigravity
 .antigravity/

@@ -1,4 +1,4 @@
-# Bugfix Proposal: Background Origin Feats Restriction & Ability Score Reroll Rules
+# Bugfix Proposal: Background Origin Feats Restriction, Ability Score Reroll Rules & Wizard Level Input Clamping
 
 > **Change ID:** `004-fix-character-creation-and-reroll-rules`
 > **Execution Order:** `004`
@@ -6,20 +6,22 @@
 > **Priority:** Medium-High
 > **Status:** draft
 > **Created:** 2026-11-04
-> **Last Updated:** 2026-11-04
+> **Last Updated:** 2026-11-05
 
 ---
 
 ## Summary
 
-Fixes two character creation and progression governance bugs:
+Fixes three character creation and progression governance bugs:
 1. Enforces that selecting a Background in the Character Creation Wizard strictly grants/limits selection to **Origin Feats (`featType == ORIGIN`)** in both the frontend UI, database background seeds, and backend `CreateCharacterService` validation.
 2. Implements **Ability Score Reroll Governance**: allows free ability score rerolling on basic unbound character sheets (`campaignId == null`), while requiring explicit **Dungeon Master (Mestre) authorization (`allowAbilityReroll`)** when a character is bound to a campaign (`campaignId != null`).
+3. Fixes **Character Creation Wizard Level Input Clamping**: decouples immediate numeric clamping from `onChange` in the wizard (Step 3), allowing users to clear the input and type multi-digit numbers such as `20` without being prematurely forced back to `1`, clamping to `[1, 20]` on `onBlur`.
 
 ## Grouped Bugs & Symptoms
 
 - **Bug 1:** Ao escolher antecedentes, as feats de origem não estão se limitando às feats de origem, dá pra escolher qualquer uma.
 - **Bug 2:** Quando personagem estiver vinculado a campanha, mestre decide se pode re-rolar atributos; na ficha de personagem básica permitir re-rolar.
+- **Bug 3:** No wizard de criação de personagem, o input de nível força o número 1 no `onChange`, impedindo apagar o 1 ou digitar números como 20.
 
 ## Root Cause Analysis (Causa Raiz)
 
@@ -31,6 +33,10 @@ Fixes two character creation and progression governance bugs:
    - In `RollService.java` (lines 50–61), `abilityRollRepository.findUnusedByUserId(userId)` locks a user into a single cached 4d6kh3 roll.
    - In `app/characters/new/page.tsx` (line 672), `if (hasRolledAbilities) return;` blocks rerolling during creation.
    - In `app/characters/[id]/edit/page.tsx` (lines 151–199), ability scores are rendered as read-only ("Atributos Imutáveis de Criação"), with no backend endpoint or campaign permission flag (`allow_ability_reroll`) allowing unbound characters to reroll freely or campaign DMs to grant reroll permission.
+3. **Immediate Clamping & Inline Falsy Fallback on Level Input (`app/characters/new/page.tsx`)**:
+   - In `CharacterCreationWizardPage`, the level input uses `onChange={(e) => handleLevelChange(Number(e.target.value) || 1)}`, and `handleLevelChange` executes `Math.min(20, Math.max(1, lvl))`.
+   - When a user deletes the digit `1` to type a new value, the input becomes `""`, `Number("") || 1` immediately evaluates to `1`, and `handleLevelChange` clamps any intermediate zero/empty state back to `1`.
+   - This controlled state reset blocks clearing the field or typing multi-digit values like `20`.
 
 ## Systemic Ripple Effects & Similar Latent Bugs (Repercussão no Código)
 
@@ -42,16 +48,17 @@ Fixes two character creation and progression governance bugs:
 ### Legacy Impact Matrix
 | Legacy Artifact / Table | Discrepancy Identified | Adaptation / Migration Action |
 |-------------------------|------------------------|-------------------------------|
-| `player_character.backgrounds` | `origin_feat_name` holds unmatched strings (`'Magic Initiate (Cleric)'`, etc.) | Flyway migration `V31__align_origin_feats_and_reroll_permissions.sql` updates `origin_feat_name` to match canonical `feats` names/slugs (`Iniciado em Magia`, `Alerta`, `Vigoroso`, `Habilidoso`, `Atacante Selvagem`). |
-| `player_character.feats` | Non-origin feats potentially missing strict `feat_type` separation | Flyway `V31` audits and enforces `feat_type = 'ORIGIN'` strictly on SRD 2024 Origin Feats (`Alert`, `Crafter`, `Healer`, `Lucky`, `Magic Initiate`, `Musician`, `Savage Attacker`, `Skilled`, `Tavern Brawler`, `Tough`) and `'GENERAL'` on general feats. |
-| `player_character.characters` | Lacks `allow_ability_reroll` column | Flyway `V31` adds `allow_ability_reroll BOOLEAN NOT NULL DEFAULT FALSE` to `player_character.characters`. |
+| `player_character.backgrounds` | `origin_feat_name` holds unmatched strings (`'Magic Initiate (Cleric)'`, etc.) | Flyway migration `V32__align_origin_feats_and_reroll_permissions.sql` updates `origin_feat_name` to match canonical `feats` names/slugs (`Iniciado em Magia`, `Alerta`, `Vigoroso`, `Habilidoso`, `Atacante Selvagem`). |
+| `player_character.feats` | Non-origin feats potentially missing strict `feat_type` separation | Flyway `V32` audits and enforces `feat_type = 'ORIGIN'` strictly on SRD 2024 Origin Feats (`Alert`, `Crafter`, `Healer`, `Lucky`, `Magic Initiate`, `Musician`, `Savage Attacker`, `Skilled`, `Tavern Brawler`, `Tough`) and `'GENERAL'` on general feats. |
+| `player_character.characters` | Lacks `allow_ability_reroll` column | Flyway `V32` adds `allow_ability_reroll BOOLEAN NOT NULL DEFAULT FALSE` to `player_character.characters`. |
 
 ## Scope
 
 ### In Scope
-- Create Flyway migration `V31__align_origin_feats_and_reroll_permissions.sql` aligning background `origin_feat_name`, auditing `feat_type = 'ORIGIN'`, and adding `allow_ability_reroll` to `characters`.
+- Create Flyway migration `V32__align_origin_feats_and_reroll_permissions.sql` aligning background `origin_feat_name`, auditing `feat_type = 'ORIGIN'`, and adding `allow_ability_reroll` to `characters`.
 - Add strict validation in `CreateCharacterService.java` verifying `f.getFeatType() == FeatType.ORIGIN` for `originFeatId`.
 - Filter and bind Origin Feats strictly to `feat.featType === 'ORIGIN'` in `app/characters/new/page.tsx`.
+- Refactor level input handling in `dungeoneer-frontend/app/characters/new/page.tsx` (Step 3: Classe) to permit intermediate string editing during typing (`onChange`), validating and clamping to the `[1, 20]` range on `onBlur` (defaulting to 1 if empty) without capping/forcing 1 on every keystroke.
 - Update `RollService.java` and add `POST /api/characters/{id}/reroll-ability-scores` and `PATCH /api/characters/{id}/reroll-permission` (for Campaign DM):
   - If `character.getCampaignId() == null`: allow rerolling ability scores freely.
   - If `character.getCampaignId() != null`: allow rerolling only when `character.isAllowAbilityReroll() == true` (and automatically reset `allowAbilityReroll = false` after the reroll is consumed, or let the DM toggle it).
@@ -65,17 +72,19 @@ Fixes two character creation and progression governance bugs:
 ### Impacted Files
 | File | Change Type | Notes |
 |------|-------------|-------|
-| `player-character-service/backend/src/main/resources/db/migration/V31__align_origin_feats_and_reroll_permissions.sql` | Create | Align background `origin_feat_name`, enforce `ORIGIN` feat types, add `allow_ability_reroll` column |
+| `player-character-service/backend/src/main/resources/db/migration/V32__align_origin_feats_and_reroll_permissions.sql` | Create | Align background `origin_feat_name`, enforce `ORIGIN` feat types, add `allow_ability_reroll` column |
 | `player-character-service/.../application/service/CreateCharacterService.java` | Modify | Enforce `f.getFeatType() == FeatType.ORIGIN` |
 | `player-character-service/.../application/service/RollService.java` | Modify | Allow rerolling for unbound characters or DM-authorized campaign characters |
 | `player-character-service/.../domain/model/PlayerCharacter.java` | Modify | Add `allowAbilityReroll` field and `updateAbilityScores` with HP recalculation |
 | `player-character-service/.../adapter/in/web/controller/PlayerCharacterController.java` | Modify | Expose endpoints to reroll character ability scores and toggle DM reroll permission |
-| `dungeoneer-frontend/app/characters/new/page.tsx` | Modify | Strictly filter Origin Feats (`featType === 'ORIGIN'`) and auto-select background's origin feat |
+| `dungeoneer-frontend/app/characters/new/page.tsx` | Modify | Strictly filter Origin Feats (`featType === 'ORIGIN'`), auto-select background's origin feat, and fix level input clamping |
 | `dungeoneer-frontend/app/characters/[id]/edit/page.tsx` | Modify | Enable ability score reroll when `campaignId == null` or `allowAbilityReroll == true` |
+| `dungeoneer-frontend/__tests__/character-wizard.test.tsx` | Modify | Add unit test verifying clearing level input and typing multi-digit values (e.g. 20) without premature clamping |
 
 ## Acceptance Criteria
 
 - [ ] **Given** a player in the Character Creation Wizard selecting a Background **When** viewing the Origin Feat selector **Then** only feats with `featType == 'ORIGIN'` are selectable, and submitting a `GENERAL` feat ID to `POST /api/characters` is rejected with `400 Bad Request` / `422`.
+- [ ] **Given** a player in Step 3 of the Character Creation Wizard **When** clearing the level input or typing a multi-digit level like `20` **Then** the input does not prematurely clamp or reset to `1` during typing (`onChange`), and on `onBlur` the final value is clamped to the valid range `[1, 20]` (defaulting to 1 if left empty).
 - [ ] **Given** a basic character sheet NOT bound to any campaign (`campaignId == null`) **When** the player opens the attribute reroll option **Then** they can reroll and reassign their ability scores freely.
 - [ ] **Given** a character bound to a campaign (`campaignId != null`) with `allowAbilityReroll == false` **When** the player attempts to reroll ability scores **Then** the button is locked with a message indicating the DM must authorize it, and the backend rejects unauthorized reroll requests.
 - [ ] **Given** a character bound to a campaign where the DM enables `allowAbilityReroll = true` **When** the player rerolls ability scores **Then** the new scores and recalculated Max HP / AC / modifiers are saved.
@@ -104,6 +113,7 @@ Fixes two character creation and progression governance bugs:
 | TR-01 | Create character with a `GENERAL` feat passed as `originFeatId` | Unit (`CreateCharacterServiceTest`) | Throws `CharacterValidationException` |
 | TR-02 | Reroll ability scores on unbound character (`campaignId == null`) | Unit / Integration | Ability scores and derived Max HP update successfully |
 | TR-03 | Reroll ability scores on campaign-bound character (`allowAbilityReroll == true`) | Unit / Integration | Reroll succeeds and resets permission flag |
+| TR-04 | User clears level input and types `20` in the character creation wizard | Frontend Unit (`character-wizard.test.tsx`) | Input accepts `20` without resetting to `1` during typing, and blur persists level 20 |
 
 ### Edge Case & Failure Mode Tests
 | Test ID | Scenario | Test Type | Expected Result |
@@ -128,8 +138,8 @@ Fixes two character creation and progression governance bugs:
 
 ### `specs/player-character-data-model-delta.md`
 - **Target Canonical Spec:** `openspec/specs/player-character-data-model.md`
-- **Summary of Updates:** Document `allow_ability_reroll` column and `V31` background origin feat alignment.
+- **Summary of Updates:** Document `allow_ability_reroll` column and `V32` background origin feat alignment.
 
 ### `specs/frontend-web-app-delta.md`
 - **Target Canonical Spec:** `openspec/specs/frontend-web-app.md`
-- **Summary of Updates:** Document Wizard Origin Feat filtering and Character Sheet / Campaign DM reroll UI controls.
+- **Summary of Updates:** Document Wizard Origin Feat filtering, Wizard level input decoupling on `onChange`/`onBlur`, and Character Sheet / Campaign DM reroll UI controls.
