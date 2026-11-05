@@ -1,7 +1,7 @@
 ---
 id: "frontend-web-app"
 title: "Dungeoneer Frontend Web App — Living Specification"
-version: "1.6.0"
+version: "1.7.0"
 status: "active"
 owners:
   - "@jaca"
@@ -85,11 +85,13 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
 - **Optimistic Updates**: Enabled for HP adjustments and spell slot usage.
 - **Cache Stale Time**: `5 minutes` for reference data, `30 seconds` for character data.
 - **Error Notifications**: Toast notifications via shadcn/ui `Sonner` consuming RFC 7807 `ProblemDetail` messages.
-- **Session Integrity Guard**: `useAuth` executes an asynchronous check against `GET /api/auth/me` on mount. If the backend returns `401 Unauthorized` or `404 Not Found` (e.g. database wipe/docker reset), `clearAuth()` is triggered immediately, purging cookies and `localStorage` to eliminate ghost sessions.
+- **HttpOnly Session & Token Management**: `dungeoneer_auth_token` is set exclusively by `auth-service` (`HttpOnly; SameSite=Lax`). JavaScript never writes the JWT to `localStorage` or `document.cookie`. All `apiFetch` and auth calls use `credentials: 'include'`, and `getAccessToken()` (in-memory) serves as the single token source for `Authorization: Bearer`.
+- **Session Integrity & Rehydration**: On mount/refresh, `useAuth` restores the session via `GET /api/auth/me` (with credentials). If the backend returns `401 Unauthorized` or `404 Not Found` (e.g. database wipe/docker reset), `clearAuth()` is triggered immediately, and logout invokes `POST /api/auth/logout` to purge the `HttpOnly` cookie and eliminate ghost sessions.
+- **Loop-Free Redirect Guard**: `middleware.ts` clears invalid or expired `dungeoneer_auth_token` cookies when redirecting to `/login?redirect=`, and `LoginForm` ignores stale in-memory auth when `?redirect=` is present. `RegisterForm` awaits a confirmed session before navigating to `/characters`.
 - **PT-BR SRD Translation Layer**: `lib/srd-translations.ts` centralizes translations for abilities, skills, racial traits, equipment proficiencies, and background descriptions applied across all reference hooks.
 - **Client-Side Role Gating (`useAuth`)**: The `useAuth` hook exposes reactive `isDM` and `isPlayer` booleans computed from `user.roles` (`DUNGEON_MASTER` / `PLAYER`), with fallback to `false` for unauthenticated sessions.
 - **Unified Post-Login Dashboard & Encyclopedia Navigation**: `/characters` serves as the primary hub pós-login containing both the character roster and the `EncyclopediaMenu` component (Arquétipos, Magias, Talentos, Itens, Linhagens, and conditionally Monstros and NPCs for DMs). Monsters and NPCs routes enforce client-side access control with a Dark Fantasy empty-state ("Em breve").
-- **Navbar Role Badging**: Displays a gold "Mestre" badge with `Crown` icon next to user identifier when `isDM` is active.
+- **Navbar Navigation & Role Badging**: Dynamically points the brand logo link to `/characters` (Dashboard) when authenticated and `/` when unauthenticated. Displays a gold "Mestre" badge with `Crown` icon next to the user identifier when `isDM` is active.
 
 ---
 
@@ -182,6 +184,7 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.7.0 | 2026-11-05 | @jaca | Consolidated HttpOnly session model, credentials inclusion, `/api/auth/me` rehydration, loop-free redirect guard, and dynamic Navbar brand link (`001-fix-auth-post-register-loop`) |
 | 1.6.0 | 2026-11-03 | @jaca | Added RestModal, header rest buttons, multi-class Hit Dice counters, and exhaustion badge (`add-long-short-rest`) |
 | 1.5.0 | 2026-11-03 | @jaca | Added Homebrew Feat charge builder form, independent rest recovery selectors, and Feats tab charge/recovery indicators (`add-homebrew-feat-charges`) |
 | 1.4.0 | 2026-11-03 | @jaca | Added Level-Up Wizard half-feat ability score selection widget, validation gating, and payload dispatch (`level-up-half-feat-ability-choice`) |

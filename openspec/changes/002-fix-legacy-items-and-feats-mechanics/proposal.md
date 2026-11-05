@@ -4,9 +4,9 @@
 > **Execution Order:** `002`
 > **Type:** Bugfix & Legacy Adaptation
 > **Priority:** High
-> **Status:** draft
+> **Status:** completed
 > **Created:** 2026-11-04
-> **Last Updated:** 2026-11-04
+> **Last Updated:** 2026-11-05
 
 ---
 
@@ -92,11 +92,11 @@ Fixes five interconnected mechanical bugs across items, armors, class features/f
 
 ## Acceptance Criteria
 
-- [ ] **Given** a character equipping "Armadura de Placa Parcial" (Half Plate) or any of the 5 previously omitted armors **When** the character sheet hydrates **Then** `armorClass` updates according to the armor's base AC and DEX cap (`15 + min(DEX, 2)` for Half Plate).
-- [ ] **Given** a character equipping an item that sets an ability score (e.g., *Gauntlets of Ogre Power* setting STR to 19) or adds an ability/AC bonus **When** the item is equipped (and attuned if required) **Then** the effective ability score, modifier, skills, saving throws, and AC reflect the item's mechanics.
-- [ ] **Given** a Bard with "Inspiração Bárdica" **When** they click "Rolar" or "Gastar" in the Actions tab **Then** 1 charge is deducted from `currentCharges`.
-- [ ] **Given** an existing or new Cleric/Paladin with "Canalizar Divindade" (or Druid with "Forma Selvagem", Monk with "Ki", etc.) **When** viewing the Actions tab **Then** the action displays its charge counter (`1/1` or `2/2`) and an interactive "Gastar" button.
-- [ ] **Given** a character with spent charges on Short Rest or Long Rest features **When** they execute a Short or Long Rest **Then** `RestService` persists the recovered charges without Hibernate cascade overwriting them.
+- [x] **Given** a character equipping "Armadura de Placa Parcial" (Half Plate) or any of the 5 previously omitted armors **When** the character sheet hydrates **Then** `armorClass` updates according to the armor's base AC and DEX cap (`15 + min(DEX, 2)` for Half Plate).
+- [x] **Given** a character equipping an item that sets an ability score (e.g., *Gauntlets of Ogre Power* setting STR to 19) or adds an ability/AC bonus **When** the item is equipped (and attuned if required) **Then** the effective ability score, modifier, skills, saving throws, and AC reflect the item's mechanics.
+- [x] **Given** a Bard with "Inspiração Bárdica" **When** they click "Rolar" or "Gastar" in the Actions tab **Then** 1 charge is deducted from `currentCharges`.
+- [x] **Given** an existing or new Cleric/Paladin with "Canalizar Divindade" (or Druid with "Forma Selvagem", Monk with "Ki", etc.) **When** viewing the Actions tab **Then** the action displays its charge counter (`1/1` or `2/2`) and an interactive "Gastar" button.
+- [x] **Given** a character with spent charges on Short Rest or Long Rest features **When** they execute a Short or Long Rest **Then** `RestService` persists the recovered charges without Hibernate cascade overwriting them.
 
 ## Defensive Security & Validation Considerations
 
