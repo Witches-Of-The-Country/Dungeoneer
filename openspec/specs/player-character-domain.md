@@ -1,7 +1,7 @@
 ---
 id: "player-character-domain"
 title: "Player Character Domain & API — Living Specification"
-version: "1.9.0"
+version: "1.10.0"
 status: "active"
 owners:
   - "@jaca"
@@ -451,6 +451,20 @@ Capabilities granted by Feats are structured via immutable domain records in `do
   4. `newCurrentHp = Math.max(0, hitPointsCurrent - remainingDamage)`
   Damage never impacts true HP (`hitPointsCurrent`) until all temporary HP (`hitPointsTemp`) is completely depleted.
 
+### Origin Feat Enforcement on Level 1 Character Creation
+
+- `CreateCharacterService` strictly enforces that any feat provided as `originFeatId` during Level 1 character creation has `feat.getFeatType() == FeatType.ORIGIN`. Attempting to associate non-ORIGIN feats at creation triggers a 422 Unprocessable Entity error.
+
+### Ability Score Reroll Governance & Lifecycle
+
+- **Reroll Governance**:
+  - Unbound characters (`campaignId == null`) can reroll ability scores freely.
+  - Campaign-bound characters (`campaignId != null`) can only reroll ability scores when explicitly authorized by the Campaign DM via `allowAbilityReroll == true`. Once a campaign-bound character executes a reroll, `allowAbilityReroll` resets to `false`.
+  - In creation flow (`POST /api/characters/ability-rolls?forceNew=true`), unused rolls for the user are invalidated (`abilityRollRepository.invalidateUnusedByUserId(userId)`), enforcing the unique constraint `idx_unused_ability_roll` while allowing fresh rolls during wizard generation.
+- **Reroll Endpoints**:
+  - `POST /api/characters/{id}/reroll-ability-scores`: Generates a new 4d6kh3 roll set, recalculates derived HP and AC, and resets `allowAbilityReroll` if bound to a campaign.
+  - `PATCH /api/characters/{id}/reroll-permission`: Toggles `allowAbilityReroll` flag on the character sheet (DM permission control).
+
 Example `ProblemDetail` payload:
 ```json
 {
@@ -477,6 +491,7 @@ Example `ProblemDetail` payload:
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.10.0 | 2026-11-05 | @jaca | Added Origin Feat validation in CreateCharacterService, ability score reroll governance, and POST/PATCH reroll endpoints (`004-fix-character-creation-and-reroll-rules`) |
 | 1.9.0 | 2026-11-05 | @jaca | Added 12th discrete TRINKET equipment slot (belts, charms, talismans) and keyword auto-inference (`007-add-trinket-equipment-slot`) |
 | 1.8.0 | 2026-11-05 | @jaca | Integrated EquipmentSlot enum, slot occupancy & auto-unequip rules, 2-ring limit, two-handed hand locking, and D&D 5e Temp HP absorption order (`003-fix-equipment-slots-and-combat-sheet`) |
 | 1.7.0 | 2026-11-05 | @jaca | Integrated WondrousMechanics, dynamic item ability score overrides/bonuses in CharacterSheetHydrator, and cascade-safe RestService feat charge recovery (`002-fix-legacy-items-and-feats-mechanics`) |

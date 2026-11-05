@@ -37,4 +37,4 @@
 - [x] All implementation tasks complete
 - [x] All tests passing (`mvn clean test` and `npm test`)
 - [x] Proposal acceptance criteria verified
-- [ ] Ready for `sdd-spec-archive`
+- [x] Ready for `sdd-spec-archive`

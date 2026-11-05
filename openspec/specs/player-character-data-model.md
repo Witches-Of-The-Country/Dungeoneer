@@ -1,7 +1,7 @@
 ---
 id: "player-character-data-model"
 title: "Player Character Data Model & Persistence — Living Specification"
-version: "1.10.0"
+version: "1.11.0"
 status: "active"
 owners:
   - "@jaca"
@@ -87,6 +87,7 @@ erDiagram
         varchar ability_score_method
         varchar hp_calculation_method
         boolean has_pending_level_choices
+        boolean allow_ability_reroll
         text notes
         varchar[] skill_proficiencies
         uuid lineage_id FK
@@ -300,6 +301,7 @@ erDiagram
 | `ability_score_method` | `VARCHAR(20)` | NOT NULL | STANDARD_ARRAY, POINT_BUY, ROLLED |
 | `hp_calculation_method` | `VARCHAR(15)` | NOT NULL, DEFAULT 'MAX' | MAX, AVERAGE, ROLLED |
 | `has_pending_level_choices` | `BOOLEAN` | NOT NULL, DEFAULT FALSE | Flag set when created at level > 1, deferred until interactive level-up wizards |
+| `allow_ability_reroll` | `BOOLEAN` | NOT NULL, DEFAULT FALSE | Governs ability score reroll permissions when character is bound to a campaign |
 | `notes` | `TEXT` | NOT NULL, DEFAULT '' | Player notes and campaign annotations |
 | `skill_proficiencies` | `VARCHAR[]` | NOT NULL, DEFAULT '{}' | Combined class and background skill proficiencies |
 | `lineage_id` | `UUID` | FK → lineages.id, NOT NULL | |
@@ -582,6 +584,7 @@ erDiagram
 | V29 | `V29__fix_legacy_items_and_feats_mechanics.sql` | Populate ArmorMechanics for 6 missing armors, seed WondrousMechanics on SRD magic items, and normalize feat mechanical_effects JSONB keys |
 | V30 | `V30__add_equipment_slots_and_custom_actions.sql` | Add `equipped_slot` (VARCHAR 30) to `character_items`, migrate legacy equipped items to canonical slots with duplicate armor resolution, and create `character_custom_actions` table |
 | V31 | `V31__add_trinket_equipment_slot.sql` | Migrate equipped belts, sashes, talismans, charms, and trinkets to TRINKET slot |
+| V32 | `V32__align_origin_feats_and_reroll_permissions.sql` | Align origin feats with canonical feat names, enforce feat_type = 'ORIGIN' on SRD 2024 feats, and add allow_ability_reroll to characters |
 
 ---
 
@@ -595,6 +598,7 @@ erDiagram
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.11.0 | 2026-11-05 | @jaca | Documented Flyway migration V32 (align origin feat names, feat_type = 'ORIGIN', and allow_ability_reroll on characters) (`004-fix-character-creation-and-reroll-rules`) |
 | 1.10.0 | 2026-11-05 | @jaca | Documented Flyway migration V31 (TRINKET slot legacy data migration for belts and charms) (`007-add-trinket-equipment-slot`) |
 | 1.9.0 | 2026-11-05 | @jaca | Documented Flyway migration V30 (equipped_slot on character_items, legacy slot migration & duplicate armor resolution, character_custom_actions table) (`003-fix-equipment-slots-and-combat-sheet`) |
 | 1.8.0 | 2026-11-05 | @jaca | Documented Flyway migration V29 (ArmorMechanics fix, WondrousMechanics seeding, feat mechanical_effects normalization, character_feats charge backfill) (`002-fix-legacy-items-and-feats-mechanics`) |

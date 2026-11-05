@@ -1,7 +1,7 @@
 ---
 id: "frontend-web-app"
 title: "Dungeoneer Frontend Web App — Living Specification"
-version: "1.10.0"
+version: "1.11.0"
 status: "active"
 owners:
   - "@jaca"
@@ -50,9 +50,9 @@ resources:
 |------|-------|---------|
 | 1 | **Nome & Regras** | Character name input, ruleset selector (`SRD_2014` vs `SRD_2024`) |
 | 2 | **Linhagem** | Lineage picker (filtered by ruleset), preview granted traits with PT-BR translations |
-| 3 | **Classe** | Class picker, initial level (1–20), HP calculation method (`MAX`, `AVERAGE`, `ROLLED`), class skills selection, and multiclass level distribution |
-| 4 | **Antecedente** | Background picker (filtered by ruleset), ASI (+2/+1 or +1/+1/+1 in 2024), origin feat, and skill collision warning |
-| 5 | **Atributos** | Method selector (`Standard Array` / `Point Buy` / `Roll`). Single-chance server roll lock, interactive slot assignment |
+| 3 | **Classe** | Class picker, initial level (1–20) with decoupled numeric input allowing intermediate string editing and onBlur clamping to `[1, 20]`, HP calculation method (`MAX`, `AVERAGE`, `ROLLED`), class skills selection, and multiclass level distribution |
+| 4 | **Antecedente** | Background picker (filtered by ruleset), ASI (+2/+1 or +1/+1/+1 in 2024), origin feat (strictly filtered to `featType === 'ORIGIN'`), and skill collision warning |
+| 5 | **Atributos** | Method selector (`Standard Array` / `Point Buy` / `Roll`). Single-chance server roll lock, interactive slot assignment, and creation re-roll support via `forceNew=true` (invalidating previous unused rolls) |
 | 6 | **Revisão & Criação** | Full character summary with live derived stats (HP, AC, Initiative, Speed, PB), confirm and submit (`POST /api/characters`) |
 
 **Step 3 Mechanics & Multiclass HP Rules:**
@@ -85,9 +85,9 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
 - **Optimistic Updates**: Enabled for HP adjustments and spell slot usage.
 - **Cache Stale Time**: `5 minutes` for reference data, `30 seconds` for character data.
 - **Error Notifications**: Toast notifications via shadcn/ui `Sonner` consuming RFC 7807 `ProblemDetail` messages.
-- **HttpOnly Session & Token Management**: `dungeoneer_auth_token` is set exclusively by `auth-service` (`HttpOnly; SameSite=Lax`). JavaScript never writes the JWT to `localStorage` or `document.cookie`. All `apiFetch` and auth calls use `credentials: 'include'`, and `getAccessToken()` (in-memory) serves as the single token source for `Authorization: Bearer`.
-- **Session Integrity & Rehydration**: On mount/refresh, `useAuth` restores the session via `GET /api/auth/me` (with credentials). If the backend returns `401 Unauthorized` or `404 Not Found` (e.g. database wipe/docker reset), `clearAuth()` is triggered immediately, and logout invokes `POST /api/auth/logout` to purge the `HttpOnly` cookie and eliminate ghost sessions.
-- **Loop-Free Redirect Guard**: `middleware.ts` clears invalid or expired `dungeoneer_auth_token` cookies when redirecting to `/login?redirect=`, and `LoginForm` ignores stale in-memory auth when `?redirect=` is present. `RegisterForm` awaits a confirmed session before navigating to `/characters`.
+- **HttpOnly Session & Token Management**: `dungeoneer_auth_token` is synchronized in cookies and `localStorage` upon authentication so Next.js Edge Middleware (`middleware.ts`) can validate protected routes server-side (`/characters`, `/profile`). All `apiFetch` and auth calls use `credentials: 'include'`, with `getAccessToken()` serving as the single token provider for `Authorization: Bearer`.
+- **Session Integrity & Rehydration**: On mount/refresh, `useAuth` restores the session from in-memory token, cookies, or `localStorage`, verifying user profile via `GET /api/auth/me`. If the backend returns `401 Unauthorized` or `404 Not Found`, `clearAuth()` purges tokens and cookies to prevent ghost sessions.
+- **Loop-Free Redirect Guard**: `middleware.ts` clears invalid or expired `dungeoneer_auth_token` cookies when redirecting to `/login?redirect=`, and `LoginForm` clears stale sessions once on initial mount without prematurely logging out newly authenticated submissions. Safe redirect targets enforce relative paths (`/` and `!//`). `RegisterForm` awaits a confirmed session before navigating to `/characters`.
 - **PT-BR SRD Translation Layer**: `lib/srd-translations.ts` centralizes translations for abilities, skills, racial traits, equipment proficiencies, and background descriptions applied across all reference hooks.
 - **Client-Side Role Gating (`useAuth`)**: The `useAuth` hook exposes reactive `isDM` and `isPlayer` booleans computed from `user.roles` (`DUNGEON_MASTER` / `PLAYER`), with fallback to `false` for unauthenticated sessions.
 - **Unified Post-Login Dashboard & Encyclopedia Navigation**: `/characters` serves as the primary hub pós-login containing both the character roster and the `EncyclopediaMenu` component (Arquétipos, Magias, Talentos, Itens, Linhagens, and conditionally Monstros and NPCs for DMs). Monsters and NPCs routes enforce client-side access control with a Dark Fantasy empty-state ("Em breve").
@@ -201,6 +201,7 @@ Responsive grid (3 columns on desktop, 2 on tablet, 1 on mobile) with collapsibl
 
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
+| 1.11.0 | 2026-11-05 | @jaca | Documented wizard origin feat filtering, level input decoupling onBlur clamping, creation ability reroll, and login redirect loop fix (`004-fix-character-creation-and-reroll-rules`) |
 | 1.10.0 | 2026-11-05 | @jaca | Documented 12th TRINKET slot (Acessório / Cinto) in InventoryTab equipment grid and test-ids (`007-add-trinket-equipment-slot`) |
 | 1.9.0 | 2026-11-05 | @jaca | Documented 11-slot equipment grid in InventoryTab, Temp HP damage absorption order in Character Sheet combat controls, and Custom Actions Edit/Delete modals in ActionsTab (`003-fix-equipment-slots-and-combat-sheet`) |
 | 1.8.0 | 2026-11-05 | @jaca | Documented charged actions button display and automatic charge deduction upon dice roll in ActionsTab and DiceRollerModal (`002-fix-legacy-items-and-feats-mechanics`) |
